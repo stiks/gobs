@@ -1,0 +1,27 @@
+### JetBrains ###
+
+# User-specific stuff
+.idea/
+**/.DS_Store
+
+# File-based project format
+*.iws
+
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, build with `go test -c`
+*.test
+coverage.txt
+cover.html
+.testCoverage.txt
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# compiled builds
+/bin
