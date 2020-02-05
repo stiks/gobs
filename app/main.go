@@ -9,6 +9,8 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 
 	"google.golang.org/appengine"
+
+	"github.com/stiks/gobs/lib/controllers"
 )
 
 func main() {
@@ -28,5 +30,9 @@ func main() {
 
 	// Start server
 	http.Handle("/", e)
+
+	// Core endpoints
+	controllers.NewHealthController().Routes(e.Group("api"))
+
 	appengine.Main()
 }
