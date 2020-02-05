@@ -39,5 +39,6 @@ func (u *AuthRequest) Validate() error {
 func (u *AuthRequest) ValidateLogin() error {
 	return validation.ValidateStruct(u,
 		validation.Field(&u.Username, validation.Required, is.Email),
+		validation.Field(&u.Password, validation.Required),
 	)
 }
