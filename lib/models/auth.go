@@ -5,6 +5,8 @@ import (
 
 	"github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
+
+	"github.com/google/uuid"
 )
 
 // AuthRequest ...
@@ -20,10 +22,10 @@ type AuthRequest struct {
 var (
 	// ErrInvalidGrantType ...
 	ErrInvalidGrantType = errors.New("invalid grant type")
-	// ErrInvalidClientIDOrSecret ...
-	ErrInvalidClientIDOrSecret = errors.New("invalid client ID or secret")
+	// ErrInvalidClientOrSecret ...
+	ErrInvalidClientOrSecret = errors.New("invalid client ID or secret")
 	// ErrEmptyClientIDOrSecret ...
-	ErrEmptyClientIDOrSecret = errors.New("client ID or secret cannot be empty")
+	ErrEmptyClientOrSecret = errors.New("client ID or secret cannot be empty")
 	// ErrInvalidScope ...
 	ErrInvalidScope = errors.New("invalid scope")
 )
@@ -41,4 +43,16 @@ func (u *AuthRequest) ValidateLogin() error {
 		validation.Field(&u.Username, validation.Required, is.Email),
 		validation.Field(&u.Password, validation.Required),
 	)
+}
+
+// TokenResponse ...
+type TokenResponse struct {
+	UserID       uuid.UUID `json:"user_id,omitempty"`
+	User         *User     `json:"-"`
+	AccessToken  string    `json:"access_token"`
+	ExpiresIn    int       `json:"expires_in"`
+	TokenType    string    `json:"token_type"`
+	RefreshToken string    `json:"refresh_token,omitempty"`
+	Scope        string    `json:"scope,omitempty"`
+	Authority    string    `json:"authority,omitempty"`
 }

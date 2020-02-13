@@ -5,13 +5,18 @@ import (
 	"net/url"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/stiks/gobs/lib/providers/mock"
 	"github.com/stiks/gobs/lib/services"
-	"github.com/stretchr/testify/assert"
 )
 
 func _queueSrv() services.QueueService {
 	return services.NewQueueService(mock.NewQueueRepository())
+}
+
+func TestService_Queue_NewQueueService(t *testing.T) {
+	assert.Implements(t, (*services.QueueService)(nil), _queueSrv())
 }
 
 func TestService_Queue_Add(t *testing.T) {

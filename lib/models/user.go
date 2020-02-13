@@ -64,6 +64,7 @@ type User struct {
 	OwnerID           uuid.UUID `json:"ownerId"    sql:",type:uuid"`
 	Owner             *User     `json:"owner"`
 	Locked            bool      `json:"locked"`
+	IsActive          bool      `json:"active"`
 	PasswordResetAt   time.Time `json:"-"`
 	CreatedAt         time.Time `json:"createdAt"  sql:"default:now()"`
 	UpdatedAt         time.Time `json:"updatedAt"  sql:"default:now()"`
