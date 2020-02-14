@@ -75,7 +75,17 @@ func TestMock_Auth_FindByID(t *testing.T) {
 func TestMock_Auth_UpdateLastLogin(t *testing.T) {
 	r := mock.NewAuthRepository()
 
-	assert.NoError(t, r.UpdateLastLogin(nil, helpers.UUIDFromString(t, "775a5b37-1742-4e54-9439-0357e768b011")))
+
+	t.Run("Existing user", func(t *testing.T) {
+		assert.NoError(t, r.UpdateLastLogin(nil, helpers.UUIDFromString(t, "775a5b37-1742-4e54-9439-0357e768b011")))
+	})
+
+	t.Run("Non-existing user", func(t *testing.T) {
+		err := r.UpdateLastLogin(nil, helpers.UUIDFromString(t, "5fcc94e5-c6aa-4320-8469-f5021af54b88"))
+		if assert.Error(t, err) {
+			assert.EqualError(t, err, "user not found", "error message %s", "formatted")
+		}
+	})
 }
 
 func TestMock_Auth_FindByClientUser(t *testing.T) {
