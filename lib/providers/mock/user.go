@@ -3,48 +3,61 @@ package mock
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stiks/gobs/lib/models"
 	"github.com/stiks/gobs/lib/repositories"
+	"github.com/stiks/gobs/pkg/helpers"
+)
+
+var (
+	_usersList = []models.User{
+		{
+			ID:                helpers.UUIDFromString(nil, "775a5b37-1742-4e54-9439-0357e768b011"),
+			Email:             "peter@test.com",
+			PasswordHash:      []byte("$2a$10$kPrRofMm9VnE5w9ih6FwtuiuY/fIJ7/pcwvAmvL/3x3t2I144hyyq"),
+			PasswordResetHash: "random",
+			Status:            models.StatusActive,
+			CreatedAt:         time.Now(),
+			UpdatedAt:         time.Now(),
+		},
+		{
+			ID:                uuid.New(),
+			Email:             "oper@test.com",
+			PasswordHash:      []byte("$2a$10$bzzov5K9QwC6mptVSJVvAuFvA4w245HsiXxfMpOtpzASJ4Rr6E/DG"),
+			PasswordResetHash: "5zQVfk8aQlZgQiW0vd2PA8kyj4",
+			OwnerID:           helpers.UUIDFromString(nil, "775a5b37-1742-4e54-9439-0357e768b011"),
+			Status:            models.StatusActive,
+			CreatedAt:         time.Now(),
+			UpdatedAt:         time.Now(),
+		},
+		{
+			ID:                helpers.UUIDFromString(nil, "3ab1ba2a-6031-4e34-aae3-dcd43a987775"),
+			Email:             "admin@test.com",
+			PasswordHash:      []byte("$2a$10$Dda31WQP2L.pnM4M8F3xZ.yM6vX31mCmb10t76v4ja9WrQ0XRvgDy"),
+			OwnerID:           helpers.UUIDFromString(nil, "775a5b37-1742-4e54-9439-0357e768b011"),
+			Status:            models.StatusInit,
+			PasswordResetHash: "ZXqEMubf5DinaTHuOyJIm1z3Dq",
+			CreatedAt:         time.Now(),
+			UpdatedAt:         time.Now(),
+		},
+		{
+			ID:                uuid.New(),
+			Email:             "root@test.com",
+			PasswordHash:      nil,
+			PasswordResetHash: "2e4EHSsVkledZxWwU7j3BnNBYo",
+			Status:            models.StatusInit,
+			CreatedAt:         time.Now(),
+			UpdatedAt:         time.Now(),
+		},
+	}
 )
 
 // NewUserRepository ...
 func NewUserRepository() repositories.UserRepository {
-	id, err := uuid.Parse("775a5b37-1742-4e54-9439-0357e768b011")
-	if err != nil {
-		log.Fatalf("Unable to get UUID from string: %s", err.Error())
-	}
-
 	return &userRepository{
-		db: []models.User{
-			{
-				ID:                id,
-				Email:             "peter@test.com",
-				PasswordHash:      []byte("$2a$10$kPrRofMm9VnE5w9ih6FwtuiuY/fIJ7/pcwvAmvL/3x3t2I144hyyq"),
-				PasswordResetHash: "randomhash",
-				Status:            models.StatusActive,
-			},
-			{
-				ID:                uuid.New(),
-				Email:             "oper@test.com",
-				PasswordHash:      []byte("$2a$10$bzzov5K9QwC6mptVSJVvAuFvA4w245HsiXxfMpOtpzASJ4Rr6E/DG"),
-				PasswordResetHash: "randomh123123ash",
-				Status:            models.StatusActive,
-			},
-			{
-				ID:           uuid.New(),
-				Email:        "admin@test.com",
-				PasswordHash: []byte("$2a$10$Dda31WQP2L.pnM4M8F3xZ.yM6vX31mCmb10t76v4ja9WrQ0XRvgDy"),
-				Status:       models.StatusInit,
-			},
-			{
-				ID:           uuid.New(),
-				Email:        "root@test.com",
-				PasswordHash: nil,
-				Status:       models.StatusInit,
-			},
-		},
+		db: _usersList,
 	}
 }
 
@@ -66,7 +79,9 @@ func (r *userRepository) FindByUsername(ctx context.Context, username string) (*
 // FindByResetHash ...
 func (r *userRepository) FindByResetHash(ctx context.Context, hash string) (*models.User, error) {
 	for _, key := range r.db {
-		if string(key.PasswordResetHash) == hash {
+		log.Printf("PWD: %s HASH: %s", key.PasswordResetHash, hash)
+
+		if key.PasswordResetHash == hash {
 			return &key, nil
 		}
 	}

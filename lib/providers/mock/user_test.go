@@ -38,7 +38,7 @@ func TestMock_User_FindByResetHash(t *testing.T) {
 	r := mock.NewUserRepository()
 
 	t.Run("Existing user", func(t *testing.T) {
-		user, err := r.FindByResetHash(nil, "randomhash")
+		user, err := r.FindByResetHash(nil, "random")
 		if assert.NoError(t, err) {
 			assert.Equal(t, "775a5b37-1742-4e54-9439-0357e768b011", user.ID.String())
 		}

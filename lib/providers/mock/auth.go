@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/labstack/gommon/log"
+	"github.com/stiks/gobs/pkg/helpers"
 
 	"github.com/stiks/gobs/lib/models"
 	"github.com/stiks/gobs/lib/repositories"
@@ -19,36 +19,31 @@ type authRepository struct {
 
 // NewAuthRepository ...
 func NewAuthRepository() repositories.AuthRepository {
-	id, err := uuid.Parse("775a5b37-1742-4e54-9439-0357e768b011")
-	if err != nil {
-		log.Fatalf("Unable to get UUID from string: %s", err.Error())
-	}
-
 	return &authRepository{
 		db: []models.Token{
 			{
-				ID:        id,
-				ClientID:  id,
-				UserID:    id,
+				ID:        helpers.UUIDFromString(nil, "775a5b37-1742-4e54-9439-0357e768b011"),
+				ClientID:  helpers.UUIDFromString(nil, "775a5b37-1742-4e54-9439-0357e768b011"),
+				UserID:    helpers.UUIDFromString(nil, "775a5b37-1742-4e54-9439-0357e768b011"),
 				Token:     "sdfsdf5K9QwC6mptVSJVvAuFvA4w245HsiXxfMpOtpzASJ4Rr6E",
 				ExpiresAt: int(time.Now().AddDate(0, 0, 1).Unix()),
 			},
 			{
 				ID:       uuid.New(),
-				ClientID: id,
+				ClientID: helpers.UUIDFromString(nil, "775a5b37-1742-4e54-9439-0357e768b011"),
 				UserID:   uuid.New(),
 				Token:    "5K9QwC6mptVSJVvAuFvA4w245sdfsdfHsiXxfMpOtpzASJ4Rr6E",
 			},
 			{
 				ID:       uuid.New(),
-				ClientID: id,
-				UserID:   id,
+				ClientID: helpers.UUIDFromString(nil, "775a5b37-1742-4e54-9439-0357e768b011"),
+				UserID:   helpers.UUIDFromString(nil, "775a5b37-1742-4e54-9439-0357e768b011"),
 				Token:    "5K9QwC6mptVSJVvAuFsdsdvA4w245HsiXxfMpOtpzASJ4Rr6E",
 			},
 		},
 		clients: []models.AuthClient{
 			{
-				ID:           id,
+				ID:           helpers.UUIDFromString(nil, "775a5b37-1742-4e54-9439-0357e768b011"),
 				ClientID:     "SecRetAuthKey",
 				ClientSecret: "SecretSuper",
 			},
@@ -63,35 +58,7 @@ func NewAuthRepository() repositories.AuthRepository {
 				ClientSecret: "MegaKeySecretSuper",
 			},
 		},
-		users: []models.User{
-			{
-				ID:                id,
-				Email:             "peter@test.com",
-				PasswordHash:      []byte("$2a$10$kPrRofMm9VnE5w9ih6FwtuiuY/fIJ7/pcwvAmvL/3x3t2I144hyyq"),
-				PasswordResetHash: "randomhash",
-				Role:              "admin",
-				IsActive:          true,
-			},
-			{
-				ID:                uuid.New(),
-				Email:             "oper@test.com",
-				PasswordHash:      []byte("$2a$10$bzzov5K9QwC6mptVSJVvAuFvA4w245HsiXxfMpOtpzASJ4Rr6E/DG"),
-				PasswordResetHash: "randomh123123ash",
-				IsActive:          true,
-			},
-			{
-				ID:           uuid.New(),
-				Email:        "admin@test.com",
-				PasswordHash: []byte("$2a$10$Dda31WQP2L.pnM4M8F3xZ.yM6vX31mCmb10t76v4ja9WrQ0XRvgDy"),
-				IsActive:     false,
-			},
-			{
-				ID:           uuid.New(),
-				Email:        "root@test.com",
-				PasswordHash: nil,
-				IsActive:     false,
-			},
-		},
+		users: _usersList,
 	}
 }
 

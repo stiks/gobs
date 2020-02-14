@@ -162,9 +162,9 @@ func TestService_User_GetByPwdResetHash(t *testing.T) {
 	srv := _userSrv()
 
 	t.Run("Get user by reset hash", func(t *testing.T) {
-		user, err := srv.GetByResetHash(nil, "randomhash")
+		user, err := srv.GetByResetHash(nil, "ZXqEMubf5DinaTHuOyJIm1z3Dq")
 		if assert.NoError(t, err) {
-			assert.Equal(t, "775a5b37-1742-4e54-9439-0357e768b011", user.ID.String())
+			assert.Equal(t, "3ab1ba2a-6031-4e34-aae3-dcd43a987775", user.ID.String())
 		}
 	})
 
@@ -180,7 +180,7 @@ func TestService_User_ResetPassword(t *testing.T) {
 	srv := _userSrv()
 
 	t.Run("Reset password by username", func(t *testing.T) {
-		user, err := srv.ResetPassword(nil, "peter@test.com")
+		user, err := srv.ResetPassword(nil, "root@test.com")
 		if assert.NoError(t, err) {
 			assert.NotEqual(t, []byte(""), user.PasswordResetHash)
 		}
