@@ -89,7 +89,7 @@ func (ctl *userController) View(c echo.Context) error {
 
 	user, err := ctl.user.GetByID(ctx, id)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusNotFound, models.ErrUserNotFound.Error())
+		return echo.NewHTTPError(http.StatusNotFound, err.Error())
 	}
 
 	return c.JSON(http.StatusOK, user)
@@ -115,7 +115,7 @@ func (ctl *userController) Create(c echo.Context) error {
 
 	// Checking if users already exist
 	if _, err := ctl.user.GetByUsername(ctx, u.Email); err == nil {
-		return echo.NewHTTPError(http.StatusConflict, models.ErrUsernameTaken.Error())
+		return echo.NewHTTPError(http.StatusConflict, err.Error())
 	}
 
 	user, err := ctl.user.Create(ctx, u.Password, u.ToUser(id))

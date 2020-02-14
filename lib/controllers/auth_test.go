@@ -247,7 +247,7 @@ func TestControllers_Auth_TokenHandler_RefreshToken(t *testing.T) {
 
 		err := ctl.TokenHandler(c)
 		if assert.Error(t, err) {
-			assert.Contains(t, err.Error(), "refresh_token: cannot be blank", "error message %s", "formatted")
+			assert.Contains(t, err.Error(), "refresh token is empty or missing", "error message %s", "formatted")
 		}
 	})
 

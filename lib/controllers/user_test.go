@@ -1,8 +1,11 @@
 package controllers_test
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
+	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/stiks/gobs/lib/controllers"
@@ -18,4 +21,42 @@ var (
 
 func TestControllers_User_NewUserController(t *testing.T) {
 	assert.NotNil(t, controllers.NewUserController(_userSrv))
+}
+
+func TestControllers_User_List(t *testing.T) {
+	ctl := controllers.NewUserController(_userSrv)
+
+	t.Run("All users", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+		rec := httptest.NewRecorder()
+		c := echo.New().NewContext(req, rec)
+		c.Set("USER_ID", "775a5b37-1742-4e54-9439-0357e768b011")
+
+		err := ctl.List(c)
+		if assert.NoError(t, err) {
+			assert.Equal(t, http.StatusOK, rec.Code)
+		}
+	})
+}
+
+func TestControllers_User_View(t *testing.T) {
+	ctl := controllers.NewUserController(_userSrv)
+
+	t.Run("Existing user", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+		rec := httptest.NewRecorder()
+		c := echo.New().NewContext(req, rec)
+		c.Set("AUTHORISED", true)
+		c.Set("USER_ID", "775a5b37-1742-4e54-9439-0357e768b011")
+		c.SetParamNames("id")
+		c.SetParamValues("775a5b37-1742-4e54-9439-0357e768b011")
+		c.SetPath("/users/:id")
+
+		if assert.NoError(t, ctl.View(c)) {
+		}
+	})
 }

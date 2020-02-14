@@ -4,8 +4,6 @@ import (
 	"errors"
 
 	"github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/go-ozzo/ozzo-validation/v4/is"
-
 	"github.com/google/uuid"
 )
 
@@ -32,21 +30,6 @@ var (
 func (u *AuthRequest) Validate() error {
 	return validation.ValidateStruct(u,
 		validation.Field(&u.GrantType, validation.Required),
-	)
-}
-
-// ValidateLogin login using password
-func (u *AuthRequest) ValidateLogin() error {
-	return validation.ValidateStruct(u,
-		validation.Field(&u.Username, validation.Required, is.Email),
-		validation.Field(&u.Password, validation.Required),
-	)
-}
-
-// ValidateRefreshToken token refresh
-func (u *AuthRequest) ValidateRefreshToken() error {
-	return validation.ValidateStruct(u,
-		validation.Field(&u.RefreshToken, validation.Required),
 	)
 }
 

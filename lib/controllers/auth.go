@@ -58,20 +58,6 @@ func (ctl *authController) TokenHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, models.ErrInvalidGrantType.Error())
 	}
 
-	switch req.GrantType {
-	case "refresh_token":
-		if err := req.ValidateRefreshToken(); err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-		}
-		break
-
-	case "password":
-		if err := req.ValidateLogin(); err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-		}
-		break
-	}
-
 	// Get auth client from request
 	client, err := ctl.auth.GetClient(ctx, req)
 	if err != nil {

@@ -173,6 +173,10 @@ func (s *authService) generateNewRefreshToken(ctx context.Context, client *model
 }
 
 func (s *authService) RefreshTokenGrant(ctx context.Context, r *models.AuthRequest, client *models.AuthClient) (*models.TokenResponse, error) {
+	if len(r.RefreshToken) <= 0 {
+		return nil, models.ErrRefreshTokenEmpty
+	}
+
 	// Fetch the refresh token
 	refreshToken, err := s.getValidRefreshToken(ctx, r.RefreshToken, client)
 	if err != nil {
