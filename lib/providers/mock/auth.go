@@ -69,6 +69,7 @@ func NewAuthRepository() repositories.AuthRepository {
 				Email:             "peter@test.com",
 				PasswordHash:      []byte("$2a$10$kPrRofMm9VnE5w9ih6FwtuiuY/fIJ7/pcwvAmvL/3x3t2I144hyyq"),
 				PasswordResetHash: "randomhash",
+				Role:              "admin",
 				IsActive:          true,
 			},
 			{

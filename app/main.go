@@ -7,7 +7,6 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-
 	"google.golang.org/appengine"
 
 	"github.com/stiks/gobs/lib/controllers"
@@ -23,6 +22,7 @@ func main() {
 	e.HideBanner = true
 
 	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
 
 	port := os.Getenv("PORT")
 	if port == "" {

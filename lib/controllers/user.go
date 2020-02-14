@@ -35,6 +35,8 @@ func NewUserController(service services.UserService) UserControllerInterface {
 
 // Routes registers route handlers for the health service
 func (ctl *userController) Routes(g *echo.Group) {
+	g.Use(auth.EnableAuthorisation())
+
 	g.GET("/users", ctl.List, auth.RequiredAuth())
 	g.GET("/users/:id", ctl.View, auth.RequiredAuth())
 	g.POST("/users", ctl.Create, auth.RequiredAuth())
