@@ -47,7 +47,7 @@ func main() {
 	controllers.NewWorkerController(queueSrv).Routes(e.Group("api"))
 
 	// Base controllers
-	controllers.NewAuthController(userSrv, authSrv).Routes(e.Group("api"))
+	controllers.NewAuthController(authSrv).Routes(e.Group("api"))
 	controllers.NewUserController(userSrv).Routes(e.Group("api"))
 
 	appengine.Main()

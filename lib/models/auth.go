@@ -26,8 +26,6 @@ var (
 	ErrInvalidClientOrSecret = errors.New("invalid client ID or secret")
 	// ErrEmptyClientIDOrSecret ...
 	ErrEmptyClientOrSecret = errors.New("client ID or secret cannot be empty")
-	// ErrInvalidScope ...
-	ErrInvalidScope = errors.New("invalid scope")
 )
 
 // Validate users model
@@ -37,11 +35,18 @@ func (u *AuthRequest) Validate() error {
 	)
 }
 
-// Validate users model
+// ValidateLogin login using password
 func (u *AuthRequest) ValidateLogin() error {
 	return validation.ValidateStruct(u,
 		validation.Field(&u.Username, validation.Required, is.Email),
 		validation.Field(&u.Password, validation.Required),
+	)
+}
+
+// ValidateRefreshToken token refresh
+func (u *AuthRequest) ValidateRefreshToken() error {
+	return validation.ValidateStruct(u,
+		validation.Field(&u.RefreshToken, validation.Required),
 	)
 }
 

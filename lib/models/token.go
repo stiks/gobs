@@ -25,7 +25,7 @@ type Token struct {
 	UserID    uuid.UUID   `json:"user_id"`
 	User      *User       `json:"-"`
 	Token     string      `json:"token"`
-	ExpiresAt int         `json:"expires_at"`
+	ExpiresAt int64       `json:"expires_at"`
 }
 
 // NewTokenResponse ...
@@ -68,7 +68,7 @@ func NewAccessToken(client *AuthClient, user *User, expiresIn int, jwtSecret []b
 	accessToken := &Token{
 		ClientID:  client.ID,
 		Token:     t,
-		ExpiresAt: int(time.Now().UTC().Add(time.Duration(expiresIn) * time.Second).Unix()),
+		ExpiresAt: time.Now().UTC().Add(time.Duration(expiresIn) * time.Second).Unix(),
 		UserID:    user.ID,
 		User:      user,
 	}
@@ -81,7 +81,7 @@ func NewRefreshToken(client *AuthClient, user *User, expiresIn int) *Token {
 	refreshToken := &Token{
 		ClientID:  client.ID,
 		Token:     uuid.New().String(),
-		ExpiresAt: int(time.Now().UTC().Add(time.Duration(expiresIn) * time.Second).Unix()),
+		ExpiresAt: time.Now().UTC().Add(time.Duration(expiresIn) * time.Second).Unix(),
 		UserID:    user.ID,
 		User:      user,
 	}

@@ -26,7 +26,7 @@ func NewAuthRepository() repositories.AuthRepository {
 				ClientID:  helpers.UUIDFromString(nil, "775a5b37-1742-4e54-9439-0357e768b011"),
 				UserID:    helpers.UUIDFromString(nil, "775a5b37-1742-4e54-9439-0357e768b011"),
 				Token:     "sdfsdf5K9QwC6mptVSJVvAuFvA4w245HsiXxfMpOtpzASJ4Rr6E",
-				ExpiresAt: int(time.Now().AddDate(0, 0, 1).Unix()),
+				ExpiresAt: time.Now().AddDate(0, 0, 1).Unix(),
 			},
 			{
 				ID:       uuid.New(),
@@ -35,10 +35,11 @@ func NewAuthRepository() repositories.AuthRepository {
 				Token:    "5K9QwC6mptVSJVvAuFvA4w245sdfsdfHsiXxfMpOtpzASJ4Rr6E",
 			},
 			{
-				ID:       uuid.New(),
-				ClientID: helpers.UUIDFromString(nil, "775a5b37-1742-4e54-9439-0357e768b011"),
-				UserID:   helpers.UUIDFromString(nil, "775a5b37-1742-4e54-9439-0357e768b011"),
-				Token:    "5K9QwC6mptVSJVvAuFsdsdvA4w245HsiXxfMpOtpzASJ4Rr6E",
+				ID:        uuid.New(),
+				ClientID:  helpers.UUIDFromString(nil, "775a5b37-1742-4e54-9439-0357e768b011"),
+				UserID:    helpers.UUIDFromString(nil, "775a5b37-1742-4e54-9439-0357e768b011"),
+				Token:     "ExpiredRefreshToken",
+				ExpiresAt: time.Now().AddDate(-1, 0, 1).Unix(),
 			},
 		},
 		clients: []models.AuthClient{

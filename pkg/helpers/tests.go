@@ -1,6 +1,8 @@
 package helpers
 
 import (
+	"bytes"
+	"encoding/json"
 	"log"
 	"testing"
 
@@ -24,4 +26,13 @@ func UUIDFromStringPointer(t *testing.T, uStr string) *uuid.UUID {
 	id := UUIDFromString(t, uStr)
 
 	return &id
+}
+
+func ObjectToByte(t *testing.T, obj interface{}) *bytes.Reader {
+	b, err := json.Marshal(obj)
+	if err != nil {
+		t.Fatalf("Failed to marshal body: %v", err.Error())
+	}
+
+	return bytes.NewReader(b)
 }

@@ -79,10 +79,16 @@ func (s *authService) GetClient(ctx context.Context, r *models.AuthRequest) (*mo
 func (s *authService) PasswordGrant(ctx context.Context, req *models.AuthRequest, client *models.AuthClient) (*models.TokenResponse, error) {
 	// Find user by username
 	user, err := s.repo.FindUserByUsername(ctx, req.Username)
+	if err != nil && err == models.ErrUserNotFound {
+		// For security reason
+		return nil, models.ErrInvalidUsernameOrPassword
+	}
+
+	// Any other get user error
 	if err != nil {
 		xlog.Errorf(ctx, "Find user details error: %s", err.Error())
 
-		return nil, models.ErrUserNotFound
+		return nil, err
 	}
 
 	// Check that the password is set

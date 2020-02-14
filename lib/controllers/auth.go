@@ -12,7 +12,6 @@ import (
 )
 
 type authController struct {
-	user services.UserService
 	auth services.AuthService
 }
 
@@ -23,9 +22,8 @@ type AuthControllerInterface interface {
 }
 
 // NewAuthController returns a new Service instance
-func NewAuthController(userSrv services.UserService, authSrv services.AuthService) AuthControllerInterface {
+func NewAuthController(authSrv services.AuthService) AuthControllerInterface {
 	return &authController{
-		user: userSrv,
 		auth: authSrv,
 	}
 }
@@ -58,6 +56,20 @@ func (ctl *authController) TokenHandler(c echo.Context) error {
 	grantHandler, ok := grantTypes[req.GrantType]
 	if !ok {
 		return echo.NewHTTPError(http.StatusBadRequest, models.ErrInvalidGrantType.Error())
+	}
+
+	switch req.GrantType {
+	case "refresh_token":
+		if err := req.ValidateRefreshToken(); err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		}
+		break
+
+	case "password":
+		if err := req.ValidateLogin(); err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		}
+		break
 	}
 
 	// Get auth client from request

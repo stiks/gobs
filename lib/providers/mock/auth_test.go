@@ -122,7 +122,7 @@ func TestMock_Auth_Create(t *testing.T) {
 		ClientID:  helpers.UUIDFromString(t, "775a5b37-1742-4e54-9439-0357e768b011"),
 		UserID:    helpers.UUIDFromString(t, "775a5b37-1742-4e54-9439-0357e768b011"),
 		Token:     "tokenhashhere",
-		ExpiresAt: int(time.Now().UTC().Add(time.Duration(100500) * time.Second).Unix()),
+		ExpiresAt: time.Now().UTC().Add(time.Duration(100500) * time.Second).Unix(),
 	}
 
 	t.Run("Non-existing token", func(t *testing.T) {
