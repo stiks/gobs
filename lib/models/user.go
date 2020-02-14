@@ -15,8 +15,6 @@ var (
 	ErrUserNotFound = errors.New("user not found")
 	// ErrInvalidUsernameOrPassword ...
 	ErrInvalidUsernameOrPassword = errors.New("invalid username or password")
-	// ErrInvalidUserPassword ...
-	ErrInvalidUserPassword = errors.New("invalid user password")
 	// ErrCannotSetEmptyUsername ...
 	ErrCannotSetEmptyUsername = errors.New("cannot set empty username")
 	// ErrUserPasswordNotSet ...
@@ -34,8 +32,6 @@ const (
 	RoleClient = "client"
 	// RoleManager ...
 	RoleManager = "manager"
-	// RoleTranslator ...
-	RoleTranslator = "translator"
 	// RoleUser ...
 	RoleUser = "user"
 )
@@ -137,6 +133,7 @@ type CreateUser struct {
 	Role      string    `json:"role"`
 	Password  string    `json:"password"`
 	Status    int       `json:"status"`
+	Active    bool      `json:"active"`
 }
 
 // Validate ...
@@ -145,7 +142,7 @@ func (u *CreateUser) Validate() error {
 		validation.Field(&u.Email, validation.Required, validation.Match(regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"))),
 		validation.Field(&u.FirstName, validation.Required),
 		validation.Field(&u.LastName, validation.Required),
-		validation.Field(&u.Role, validation.Required),
+		validation.Field(&u.Role, validation.Required, validation.In(RoleSuperUser, RoleAdmin, RoleManager, RoleClient, RoleUser)),
 		validation.Field(&u.Password),
 		validation.Field(&u.Status, validation.In(0, 1, 2)),
 	)
@@ -154,4 +151,54 @@ func (u *CreateUser) Validate() error {
 // GeneratePassword will generate unique hash for password reset
 func (u *CreateUser) GeneratePassword() {
 	u.Password = uuid.New().String()
+}
+
+// ToUser ...
+func (u *CreateUser) ToUser(id uuid.UUID) *User {
+	user := &User{
+		ID:        uuid.New(),
+		Email:     u.Email,
+		FirstName: u.FirstName,
+		LastName:  u.LastName,
+		Status:    u.Status,
+		Role:      u.Role,
+		IsActive:  u.Active,
+		OwnerID:   id,
+	}
+
+	// If password is empty, auto generate something
+	if len(u.Password) <= 0 {
+		u.GeneratePassword()
+	}
+
+	return user
+}
+
+// UpdateUser ...
+type UpdateUser struct {
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Role      string `json:"role"`
+	Status    int    `json:"status"`
+	Active    bool   `json:"active"`
+}
+
+// Validate ...
+func (u *UpdateUser) Validate() error {
+	return validation.ValidateStruct(u,
+		validation.Field(&u.FirstName, validation.Required),
+		validation.Field(&u.LastName, validation.Required),
+		validation.Field(&u.Role, validation.Required, validation.In(RoleSuperUser, RoleAdmin, RoleManager, RoleClient, RoleUser)),
+		validation.Field(&u.Status, validation.In(0, 1, 2)),
+	)
+}
+
+// Validate ...
+func (u *User) FromUpdate(data *UpdateUser) {
+	u.FirstName = data.FirstName
+	u.LastName = data.LastName
+	u.Role = data.Role
+	u.IsActive = data.Active
+	u.Status = data.Status
+
 }

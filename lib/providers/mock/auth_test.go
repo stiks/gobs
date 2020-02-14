@@ -4,11 +4,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/stiks/gobs/lib/models"
 	"github.com/stiks/gobs/lib/providers/mock"
 	"github.com/stiks/gobs/lib/repositories"
 	"github.com/stiks/gobs/pkg/helpers"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestMock_Auth_NewAuthRepository(t *testing.T) {

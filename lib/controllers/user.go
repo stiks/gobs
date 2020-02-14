@@ -108,22 +108,17 @@ func (ctl *userController) Create(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
+	id, err := auth.GetUserID(c)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
 	// Checking if users already exist
 	if _, err := ctl.user.GetByUsername(ctx, u.Email); err == nil {
 		return echo.NewHTTPError(http.StatusConflict, models.ErrUsernameTaken.Error())
 	}
 
-	if len(u.Password) <= 0 {
-		u.GeneratePassword()
-	}
-
-	user, err := ctl.user.Create(ctx, u.Password, &models.User{
-		Email:     u.Email,
-		FirstName: u.FirstName,
-		LastName:  u.LastName,
-		Status:    u.Status,
-		Role:      u.Role,
-	})
+	user, err := ctl.user.Create(ctx, u.Password, u.ToUser(id))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -145,18 +140,19 @@ func (ctl *userController) Update(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusNotFound, models.ErrUserNotFound.Error())
 	}
 
-	if err := c.Bind(user); err != nil {
+	u := new(models.UpdateUser)
+	if err := c.Bind(u); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	if err := user.Validate(); err != nil {
+	if err := u.Validate(); err != nil {
 		xlog.Errorf(ctx, "Unable to validate user query, err: %s", err.Error())
 
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	// Overwrite request user
-	user.ID = id
+	// Populate changes
+	user.FromUpdate(u)
 
 	user, err = ctl.user.Update(ctx, user)
 	if err != nil {

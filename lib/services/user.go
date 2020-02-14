@@ -131,6 +131,9 @@ func (s *userService) Create(ctx context.Context, password string, user *models.
 		return nil, err
 	}
 
+	user.CreatedAt = time.Now()
+	user.UpdatedAt = time.Now()
+
 	user, err := s.repo.Create(ctx, user)
 
 	// Clear the cache
@@ -143,6 +146,8 @@ func (s *userService) Create(ctx context.Context, password string, user *models.
 
 // Update ...
 func (s *userService) Update(ctx context.Context, user *models.User) (*models.User, error) {
+	user.UpdatedAt = time.Now()
+
 	user, err := s.repo.Update(ctx, user)
 	if err != nil {
 		xlog.Errorf(ctx, "Unable update user, err: %s", err.Error())

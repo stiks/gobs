@@ -3,9 +3,10 @@ package mock_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/stiks/gobs/lib/providers/mock"
 	"github.com/stiks/gobs/lib/repositories"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestMock_Cache_NewCacheRepository(t *testing.T) {

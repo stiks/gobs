@@ -4,9 +4,10 @@ import (
 	"net/url"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/stiks/gobs/lib/providers/mock"
 	"github.com/stiks/gobs/lib/repositories"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestMock_Queue_NewQueueRepository(t *testing.T) {
