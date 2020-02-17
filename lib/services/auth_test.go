@@ -21,7 +21,42 @@ func _authSrv() services.AuthService {
 }
 
 func TestService_Auth_NewAuthRepository(t *testing.T) {
-	assert.Implements(t, (*services.AuthService)(nil), _authSrv())
+	t.Run("AUTH_SECRET_KEY, not set", func(t *testing.T) {
+		os.Unsetenv("AUTH_SECRET_KEY")
+		os.Unsetenv("AUTH_ACCESS_TOKEN_LIFETIME")
+		os.Unsetenv("AUTH_REFRESH_TOKEN_LIFETIME")
+
+		os.Setenv("AUTH_ACCESS_TOKEN_LIFETIME", "123")
+		os.Setenv("AUTH_REFRESH_TOKEN_LIFETIME", "123")
+
+		assert.Panics(t, func() { services.NewAuthService(mock.NewAuthRepository()) })
+	})
+
+	t.Run("AUTH_ACCESS_TOKEN_LIFETIME", func(t *testing.T) {
+		os.Unsetenv("AUTH_SECRET_KEY")
+		os.Unsetenv("AUTH_ACCESS_TOKEN_LIFETIME")
+		os.Unsetenv("AUTH_REFRESH_TOKEN_LIFETIME")
+
+		os.Setenv("AUTH_SECRET_KEY", "123")
+		os.Setenv("AUTH_REFRESH_TOKEN_LIFETIME", "123")
+
+		assert.Panics(t, func() { services.NewAuthService(mock.NewAuthRepository()) })
+	})
+
+	t.Run("AUTH_REFRESH_TOKEN_LIFETIME", func(t *testing.T) {
+		os.Unsetenv("AUTH_SECRET_KEY")
+		os.Unsetenv("AUTH_ACCESS_TOKEN_LIFETIME")
+		os.Unsetenv("AUTH_REFRESH_TOKEN_LIFETIME")
+
+		os.Setenv("AUTH_SECRET_KEY", "123")
+		os.Setenv("AUTH_ACCESS_TOKEN_LIFETIME", "123")
+
+		assert.Panics(t, func() { services.NewAuthService(mock.NewAuthRepository()) })
+	})
+
+	t.Run("All set", func(t *testing.T) {
+		assert.Implements(t, (*services.AuthService)(nil), _authSrv())
+	})
 }
 
 func TestService_Auth_GetClient(t *testing.T) {

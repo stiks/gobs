@@ -29,15 +29,15 @@ type AuthService interface {
 // NewAuthService ...
 func NewAuthService(repo repositories.AuthRepository) AuthService {
 	if !env.MustPresent("AUTH_SECRET_KEY") {
-		log.Fatalf("'AUTH_SECRET_KEY' must be set")
+		log.Panicf("'AUTH_SECRET_KEY' must be set")
 	}
 
 	if !env.MustPresent("AUTH_ACCESS_TOKEN_LIFETIME") {
-		log.Fatalf("'AUTH_ACCESS_TOKEN_LIFETIME' must be set")
+		log.Panicf("'AUTH_ACCESS_TOKEN_LIFETIME' must be set")
 	}
 
 	if !env.MustPresent("AUTH_REFRESH_TOKEN_LIFETIME") {
-		log.Fatalf("'AUTH_REFRESH_TOKEN_LIFETIME' must be set")
+		log.Panicf("'AUTH_REFRESH_TOKEN_LIFETIME' must be set")
 	}
 
 	return &authService{
