@@ -6,11 +6,11 @@ import (
 	"testing"
 
 	"github.com/labstack/echo/v4"
-	"github.com/stiks/gobs/lib/models"
-	"github.com/stiks/gobs/pkg/helpers"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/stiks/gobs/lib/controllers"
-	"github.com/stretchr/testify/assert"
+	"github.com/stiks/gobs/lib/models"
+	"github.com/stiks/gobs/pkg/helpers"
 )
 
 func TestControllers_Account_NewAccountController(t *testing.T) {

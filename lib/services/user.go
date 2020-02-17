@@ -221,6 +221,10 @@ func (s *userService) UpdateUsername(ctx context.Context, id uuid.UUID, newUsern
 		return nil, models.ErrUserNotFound
 	}
 
+	if len(newUsername) <= 0 {
+		return nil, models.ErrCannotSetEmptyUsername
+	}
+
 	user.Email = newUsername
 
 	user, err = s.Update(ctx, user)

@@ -150,6 +150,13 @@ func TestService_User_UpdateUsername(t *testing.T) {
 		}
 	})
 
+	t.Run("Empty username", func(t *testing.T) {
+		_, err := srv.UpdateUsername(nil, helpers.UUIDFromString(t, "775a5b37-1742-4e54-9439-0357e768b011"), "")
+		if assert.Error(t, err) {
+			assert.EqualError(t, err, "cannot set empty username")
+		}
+	})
+
 	t.Run("Update user username, non-existing", func(t *testing.T) {
 		_, err := srv.UpdateUsername(nil, helpers.UUIDFromString(t, "5fcc94e5-c6aa-4320-8469-f5021af54b88"), "new@username.com")
 		if assert.Error(t, err) {
