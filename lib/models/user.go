@@ -193,7 +193,7 @@ func (u *UpdateUser) Validate() error {
 	)
 }
 
-// Validate ...
+// FromUpdate ...
 func (u *User) FromUpdate(data *UpdateUser) {
 	u.FirstName = data.FirstName
 	u.LastName = data.LastName

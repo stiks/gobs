@@ -75,7 +75,6 @@ func TestMock_Auth_FindByID(t *testing.T) {
 func TestMock_Auth_UpdateLastLogin(t *testing.T) {
 	r := mock.NewAuthRepository()
 
-
 	t.Run("Existing user", func(t *testing.T) {
 		assert.NoError(t, r.UpdateLastLogin(nil, helpers.UUIDFromString(t, "775a5b37-1742-4e54-9439-0357e768b011")))
 	})

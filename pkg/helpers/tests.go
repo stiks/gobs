@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// UUIDFromString ...
 func UUIDFromString(t *testing.T, uStr string) uuid.UUID {
 	id, err := uuid.Parse(uStr)
 	if err != nil {
@@ -22,12 +23,14 @@ func UUIDFromString(t *testing.T, uStr string) uuid.UUID {
 	return id
 }
 
+// UUIDFromStringPointer ...
 func UUIDFromStringPointer(t *testing.T, uStr string) *uuid.UUID {
 	id := UUIDFromString(t, uStr)
 
 	return &id
 }
 
+// ObjectToByte ...
 func ObjectToByte(t *testing.T, obj interface{}) *bytes.Reader {
 	b, err := json.Marshal(obj)
 	if err != nil {
