@@ -48,6 +48,7 @@ var (
 			Status:            models.StatusInit,
 			Role:              models.RoleUser,
 			PasswordResetHash: "ZXqEMubf5DinaTHuOyJIm1z3Dq",
+			PasswordResetAt:   time.Now(),
 			CreatedAt:         time.Now(),
 			UpdatedAt:         time.Now(),
 		},

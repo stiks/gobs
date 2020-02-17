@@ -7,13 +7,13 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	"github.com/stiks/gobs/lib/models"
-	"github.com/stiks/gobs/pkg/helpers"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/stiks/gobs/lib/controllers"
+	"github.com/stiks/gobs/lib/models"
 	"github.com/stiks/gobs/lib/providers/mock"
 	"github.com/stiks/gobs/lib/services"
+	"github.com/stiks/gobs/pkg/helpers"
 )
 
 var (

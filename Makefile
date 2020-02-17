@@ -9,8 +9,5 @@ fmt:
 	go fmt $$pkg; \
     done;
 
-cover:
-	@RICHGO_FORCE_COLOR=1 ENV=test richgo test -v -mod=vendor -cover ./...
-
 test:
 	@RICHGO_FORCE_COLOR=1 ENV=test richgo test -v -mod=vendor -cover ./...

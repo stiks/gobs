@@ -21,6 +21,16 @@ var (
 	ErrUserPasswordNotSet = errors.New("user password not set")
 	// ErrUsernameTaken ...
 	ErrUsernameTaken = errors.New("username taken")
+	// ErrInvalidUUID ...
+	ErrInvalidUUID = errors.New("invalid UUID")
+	// ErrUserIsLocked ...
+	ErrUserIsLocked = errors.New("user account is locked")
+	// ErrEmailInvalidCode ...
+	ErrEmailInvalidCode = errors.New("invalid email confirmation code supplied")
+	// ErrEmailCodeIsEmpty ...
+	ErrEmailCodeIsEmpty = errors.New("email confirmation code cannot be blank")
+	// ErrEmailCodeExpired ...
+	ErrEmailCodeExpired = errors.New("email confirmation code already used or expired")
 )
 
 const (
@@ -200,5 +210,18 @@ func (u *User) FromUpdate(data *UpdateUser) {
 	u.Role = data.Role
 	u.IsActive = data.Active
 	u.Status = data.Status
+}
 
+// EmailConfirmationCode ...
+type EmailConfirmationCode struct {
+	Code     string `json:"code"     form:"code"     query:"code"`
+	Password string `json:"password" form:"password" query:"password"`
+}
+
+// Validate ...
+func (u *EmailConfirmationCode) Validate() error {
+	return validation.ValidateStruct(u,
+		validation.Field(&u.Code, validation.Required),
+		validation.Field(&u.Password, validation.Required, validation.Length(8, 64)),
+	)
 }

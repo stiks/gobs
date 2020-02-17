@@ -20,6 +20,7 @@ func main() {
 
 	// Hide banner
 	e.HideBanner = true
+	e.HidePort = true
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
@@ -49,6 +50,7 @@ func main() {
 	// Base controllers
 	controllers.NewAuthController(authSrv).Routes(e.Group("api"))
 	controllers.NewUserController(userSrv).Routes(e.Group("api"))
+	controllers.NewAccountController(userSrv).Routes(e.Group("api"))
 
 	appengine.Main()
 }
