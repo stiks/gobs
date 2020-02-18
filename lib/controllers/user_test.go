@@ -26,6 +26,48 @@ func TestControllers_User_NewUserController(t *testing.T) {
 	assert.NotNil(t, controllers.NewUserController(_userSrv))
 }
 
+func TestControllers_User_Routes(t *testing.T) {
+	t.Run("Get users", func(t *testing.T) {
+		e := echo.New()
+		controllers.NewUserController(_userSrv).Routes(e.Group("api"))
+
+		c, _ := helpers.RequestTest(http.MethodGet, "/api/users", e)
+		assert.Equal(t, 400, c)
+	})
+
+	t.Run("View user", func(t *testing.T) {
+		e := echo.New()
+		controllers.NewUserController(_userSrv).Routes(e.Group("api"))
+
+		c, _ := helpers.RequestTest(http.MethodGet, "/api/users/123123", e)
+		assert.Equal(t, 400, c)
+	})
+
+	t.Run("Create user", func(t *testing.T) {
+		e := echo.New()
+		controllers.NewUserController(_userSrv).Routes(e.Group("api"))
+
+		c, _ := helpers.RequestTest(http.MethodPost, "/api/users", e)
+		assert.Equal(t, 400, c)
+	})
+
+	t.Run("Update user", func(t *testing.T) {
+		e := echo.New()
+		controllers.NewUserController(_userSrv).Routes(e.Group("api"))
+
+		c, _ := helpers.RequestTest(http.MethodPost, "/api/users", e)
+		assert.Equal(t, 400, c)
+	})
+
+	t.Run("Delete user", func(t *testing.T) {
+		e := echo.New()
+		controllers.NewUserController(_userSrv).Routes(e.Group("api"))
+
+		c, _ := helpers.RequestTest(http.MethodDelete, "/api/users/123", e)
+		assert.Equal(t, 400, c)
+	})
+}
+
 func TestControllers_User_List(t *testing.T) {
 	ctl := controllers.NewUserController(_userSrv)
 

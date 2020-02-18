@@ -27,6 +27,15 @@ func TestControllers_Auth_NewAuthController(t *testing.T) {
 	assert.NotNil(t, controllers.NewAuthController(_authSrv))
 }
 
+func TestControllers_Auth_Routes(t *testing.T) {
+	e := echo.New()
+	controllers.NewAuthController(_authSrv).Routes(e.Group("api"))
+
+	c, _ := helpers.RequestTest(http.MethodPost, "/api/auth/token", e)
+
+	assert.Equal(t, 400, c)
+}
+
 func TestControllers_Auth_TokenHandler(t *testing.T) {
 	ctl := controllers.NewAuthController(_authSrv)
 

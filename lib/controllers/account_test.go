@@ -17,6 +17,32 @@ func TestControllers_Account_NewAccountController(t *testing.T) {
 	assert.NotNil(t, controllers.NewAccountController(_userSrv))
 }
 
+func TestControllers_Account_Routes(t *testing.T) {
+	t.Run("Get profile", func(t *testing.T) {
+		e := echo.New()
+		controllers.NewAccountController(_userSrv).Routes(e.Group("api"))
+
+		c, _ := helpers.RequestTest(http.MethodGet, "/api/account/profile", e)
+		assert.Equal(t, 401, c)
+	})
+
+	t.Run("Post reset confirmation", func(t *testing.T) {
+		e := echo.New()
+		controllers.NewAccountController(_userSrv).Routes(e.Group("api"))
+
+		c, _ := helpers.RequestTest(http.MethodPost, "/api/account/reset-confirm", e)
+		assert.Equal(t, 400, c)
+	})
+
+	t.Run("Post reset", func(t *testing.T) {
+		e := echo.New()
+		controllers.NewAccountController(_userSrv).Routes(e.Group("api"))
+
+		c, _ := helpers.RequestTest(http.MethodPost, "/api/account/reset", e)
+		assert.Equal(t, 400, c)
+	})
+}
+
 func TestControllers_Account_GetProfile(t *testing.T) {
 	ctl := controllers.NewAccountController(_userSrv)
 

@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"log"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/labstack/echo/v4"
 )
 
 // UUIDFromString ...
@@ -38,4 +40,15 @@ func ObjectToByte(t *testing.T, obj interface{}) *bytes.Reader {
 	}
 
 	return bytes.NewReader(b)
+}
+
+func RequestTest(method, path string, e *echo.Echo) (int, string) {
+	req := httptest.NewRequest(method, path, nil)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+	rec := httptest.NewRecorder()
+
+	e.ServeHTTP(rec, req)
+
+	return rec.Code, rec.Body.String()
 }
