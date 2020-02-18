@@ -39,7 +39,7 @@ func TestControllers_User_List(t *testing.T) {
 
 		err := ctl.List(c)
 		if assert.NoError(t, err) {
-			assert.Equal(t, http.StatusOK, rec.Code)
+			assert.Contains(t, rec.Body.String(), "peter@test.com")
 		}
 	})
 }
@@ -61,7 +61,42 @@ func TestControllers_User_View(t *testing.T) {
 		}
 	})
 
-	// TODO: Create view there
+	t.Run("Existing user", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodDelete, "/", nil)
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+		rec := httptest.NewRecorder()
+		e := echo.New()
+		e.SetMaxParam(2)
+
+		c := e.NewContext(req, rec)
+		c.SetPath("/users/:id")
+		c.SetParamNames("id")
+		c.SetParamValues("775a5b37-1742-4e54-9439-0357e768b011")
+
+		if assert.NoError(t, ctl.View(c)) {
+			assert.Contains(t, rec.Body.String(), "peter@test.com")
+		}
+	})
+
+	t.Run("Non existing user", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodDelete, "/", nil)
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+		rec := httptest.NewRecorder()
+		e := echo.New()
+		e.SetMaxParam(2)
+
+		c := e.NewContext(req, rec)
+		c.SetPath("/users/:id")
+		c.SetParamNames("id")
+		c.SetParamValues("5fcc94e5-c6aa-4320-8469-f5021af54b88")
+
+		err := ctl.View(c)
+		if assert.Error(t, err) {
+			assert.Contains(t, err.Error(), "user not found", "error message %s", "formatted")
+		}
+	})
 }
 
 func TestControllers_User_Create(t *testing.T) {
@@ -135,7 +170,53 @@ func TestControllers_User_Update(t *testing.T) {
 		}
 	})
 
-	// TODO: Update view there
+	t.Run("Existing user", func(t *testing.T) {
+		body := models.CreateUser{
+			FirstName: "John",
+			LastName:  "Snow",
+			Email:     "john@snow.com",
+			Password:  "testpass",
+			Role:      "user",
+			Status:    2,
+		}
+
+		req := httptest.NewRequest(http.MethodDelete, "/", helpers.ObjectToByte(t, body))
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+		e := echo.New()
+		e.SetMaxParam(2)
+
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		c.SetPath("/users/:id")
+		c.SetParamNames("id")
+		c.SetParamValues("775a5b37-1742-4e54-9439-0357e768b011")
+
+		if assert.NoError(t, ctl.Update(c)) {
+			assert.Contains(t, rec.Body.String(), "peter@test.com")
+		}
+	})
+
+	t.Run("Non existing user", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodDelete, "/", nil)
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+		e := echo.New()
+		e.SetMaxParam(2)
+
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		c.SetPath("/users/:id")
+		c.SetParamNames("id")
+		c.SetParamValues("5fcc94e5-c6aa-4320-8469-f5021af54b88")
+
+		err := ctl.Update(c)
+		if assert.Error(t, err) {
+			assert.Contains(t, err.Error(), "user not found", "error message %s", "formatted")
+		}
+	})
 }
 
 func TestControllers_User_Delete(t *testing.T) {
@@ -155,5 +236,40 @@ func TestControllers_User_Delete(t *testing.T) {
 		}
 	})
 
-	// TODO: Real test there
+	t.Run("Existing user", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodDelete, "/", nil)
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+		e := echo.New()
+		e.SetMaxParam(2)
+
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		c.SetPath("/users/:id")
+		c.SetParamNames("id")
+		c.SetParamValues("775a5b37-1742-4e54-9439-0357e768b011")
+
+		assert.NoError(t, ctl.Delete(c))
+	})
+
+	t.Run("Non existing user", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodDelete, "/", nil)
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+		e := echo.New()
+		e.SetMaxParam(2)
+
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		c.SetPath("/users/:id")
+		c.SetParamNames("id")
+		c.SetParamValues("5fcc94e5-c6aa-4320-8469-f5021af54b88")
+
+		err := ctl.Delete(c)
+		if assert.Error(t, err) {
+			assert.Contains(t, err.Error(), "user not found", "error message %s", "formatted")
+		}
+	})
 }
