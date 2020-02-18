@@ -70,6 +70,13 @@ func TestService_User_GetByID(t *testing.T) {
 			assert.EqualError(t, err, "user not found")
 		}
 	})
+
+	t.Run("Get user by ID, zero ID", func(t *testing.T) {
+		_, err := srv.GetByID(nil, helpers.UUIDFromString(t, "00000000-0000-0000-0000-000000000000"))
+		if assert.Error(t, err) {
+			assert.EqualError(t, err, "user not found")
+		}
+	})
 }
 
 func TestService_User_Create(t *testing.T) {

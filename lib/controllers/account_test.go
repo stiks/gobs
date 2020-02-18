@@ -129,6 +129,42 @@ func TestControllers_Account_PasswordConfirm(t *testing.T) {
 		}
 	})
 
+	t.Run("Locked account", func(t *testing.T) {
+		data := models.EmailConfirmationCode{
+			Code:     "2e4EHSsVkledZxWwU7j3BnNBYo",
+			Password: "R0otIsG0od",
+		}
+
+		req := httptest.NewRequest(http.MethodPost, "/", helpers.ObjectToByte(t, data))
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+		rec := httptest.NewRecorder()
+		c := echo.New().NewContext(req, rec)
+
+		err := ctl.PasswordConfirm(c)
+		if assert.Error(t, err) {
+			assert.Contains(t, err.Error(), "user account is locked")
+		}
+	})
+
+	t.Run("Expired token", func(t *testing.T) {
+		data := models.EmailConfirmationCode{
+			Code:     "5zQVfk8aQlZgQiW0vd2PA8kyj4",
+			Password: "R0otIsG0od",
+		}
+
+		req := httptest.NewRequest(http.MethodPost, "/", helpers.ObjectToByte(t, data))
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+		rec := httptest.NewRecorder()
+		c := echo.New().NewContext(req, rec)
+
+		err := ctl.PasswordConfirm(c)
+		if assert.Error(t, err) {
+			assert.Contains(t, err.Error(), "email confirmation code already used or expired")
+		}
+	})
+
 	t.Run("Existing code, blank password", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/", helpers.ObjectToByte(t, models.EmailConfirmationCode{Code: "ZXqEMubf5DinaTHuOyJIm1z3Dq"}))
 		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
