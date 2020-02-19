@@ -4,6 +4,12 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/4f69faf9cf3186f85943/maintainability)](https://codeclimate.com/github/stiks/gobs/maintainability)
 [![License](http://img.shields.io/badge/license-mit-blue.svg?style=flat-square)](https://raw.githubusercontent.com/stiks/gobs/master/LICENSE)
 
-### Auth
+### Features
+* High performance, minimalist web framework ([Echo](https://github.com/labstack/echo))
+* Transactional emails ([Hermes](https://github.com/matcornic/hermes))
+* JWT token authorisation
+* Go modules
+
+#### Auth
 
 Auth service inspired by [go-oauth2-server](https://github.com/RichardKnop/go-oauth2-server)
