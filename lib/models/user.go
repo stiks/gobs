@@ -197,6 +197,9 @@ func (u *CreateUser) ToUser(id uuid.UUID) *User {
 		u.GeneratePassword()
 	}
 
+	// Set user's password
+	user.SetPassword(u.Password)
+
 	return user
 }
 

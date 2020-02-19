@@ -3,6 +3,7 @@ package models_test
 import (
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/stiks/gobs/lib/models"
@@ -348,6 +349,50 @@ func TestModel_CreateUser_GeneratePassword(t *testing.T) {
 	user := new(models.CreateUser)
 	user.GeneratePassword()
 	assert.NotEmpty(t, user.Password)
+}
+
+func TestModel_CreateUser_ToUser(t *testing.T) {
+	t.Run("With password", func(t *testing.T) {
+		newUser := models.CreateUser{
+			FirstName: "John",
+			LastName:  "Snow",
+			Email:     "john@snow.com",
+			Role:      models.RoleAdmin,
+			Status:    models.StatusActive,
+			Password:  "G00dG00dG00dG00dG00dG00dG00dG00dG00dG00dG00dG00dG00dG00dG00dG00dG00dG00dG00dG00d",
+		}
+
+		id := uuid.New()
+
+		user := newUser.ToUser(id)
+
+		assert.Equal(t, "John", user.FirstName)
+		assert.Equal(t, "Snow", user.LastName)
+		assert.Equal(t, "john@snow.com", user.Email)
+		assert.Equal(t, models.StatusActive, user.Status)
+		assert.Equal(t, models.RoleAdmin, user.Role)
+	})
+
+	t.Run("Without password", func(t *testing.T) {
+		newUser := models.CreateUser{
+			FirstName: "John",
+			LastName:  "Snow",
+			Email:     "john@snow.com",
+			Role:      models.RoleAdmin,
+			Status:    models.StatusActive,
+		}
+
+		id := uuid.New()
+
+		user := newUser.ToUser(id)
+
+		assert.Equal(t, "John", user.FirstName)
+		assert.Equal(t, "Snow", user.LastName)
+		assert.Equal(t, "john@snow.com", user.Email)
+		assert.Equal(t, models.StatusActive, user.Status)
+		assert.Equal(t, models.RoleAdmin, user.Role)
+		assert.NotEmpty(t, user.PasswordHash)
+	})
 }
 
 func TestModel_UpdateUser_Validate(t *testing.T) {
