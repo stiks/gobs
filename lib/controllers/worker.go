@@ -30,9 +30,9 @@ type WorkerControllerInterface interface {
 // NewWorkerController returns a controller
 func NewWorkerController(userSrv services.UserService, queueSrv services.QueueService, emailSrv services.EmailService) WorkerControllerInterface {
 	return &workerController{
-		user:userSrv,
+		user:  userSrv,
 		queue: queueSrv,
-		email:emailSrv,
+		email: emailSrv,
 	}
 }
 

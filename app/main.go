@@ -39,13 +39,14 @@ func main() {
 	var (
 		cacheSrv = services.NewCacheService(dummy.NewCacheRepository())
 		queueSrv = services.NewQueueService(mock.NewQueueRepository())
+		emailSrv = services.NewEmailService(mock.NewEmailRepository())
 		authSrv  = services.NewAuthService(mock.NewAuthRepository())
 		userSrv  = services.NewUserService(mock.NewUserRepository(), queueSrv, cacheSrv)
 	)
 
 	// Core endpoints
 	controllers.NewHealthController().Routes(e.Group("api"))
-	controllers.NewWorkerController(queueSrv).Routes(e.Group("api"))
+	controllers.NewWorkerController(userSrv, queueSrv, emailSrv).Routes(e.Group("api"))
 
 	// Base controllers
 	controllers.NewAuthController(authSrv).Routes(e.Group("api"))
