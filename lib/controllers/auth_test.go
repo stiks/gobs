@@ -57,7 +57,7 @@ func TestControllers_Auth_TokenHandler(t *testing.T) {
 
 		err := ctl.TokenHandler(c)
 		if assert.Error(t, err) {
-			assert.Contains(t, err.Error(), "invalid grant type", "error message %s", "formatted")
+			assert.Contains(t, err.Error(), "grant_type: must be a valid value.", "error message %s", "formatted")
 		}
 	})
 

@@ -113,7 +113,13 @@ func (u *User) Validate() error {
 		validation.Field(&u.Email, validation.Required, validation.Match(regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"))),
 		validation.Field(&u.FirstName, validation.Required),
 		validation.Field(&u.LastName, validation.Required),
-		validation.Field(&u.Role, validation.Required),
+		validation.Field(&u.Role, validation.Required, validation.In(
+			RoleAdmin,
+			RoleClient,
+			RoleManager,
+			RoleSuperUser,
+			RoleUser,
+		)),
 		validation.Field(&u.Status, validation.In(
 			StatusInit,
 			StatusDraft,
@@ -152,9 +158,19 @@ func (u *CreateUser) Validate() error {
 		validation.Field(&u.Email, validation.Required, validation.Match(regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"))),
 		validation.Field(&u.FirstName, validation.Required),
 		validation.Field(&u.LastName, validation.Required),
-		validation.Field(&u.Role, validation.Required, validation.In(RoleSuperUser, RoleAdmin, RoleManager, RoleClient, RoleUser)),
-		validation.Field(&u.Password),
-		validation.Field(&u.Status, validation.In(0, 1, 2)),
+		validation.Field(&u.Password, validation.Length(8, 64)),
+		validation.Field(&u.Role, validation.Required, validation.In(
+			RoleAdmin,
+			RoleClient,
+			RoleManager,
+			RoleSuperUser,
+			RoleUser,
+		)),
+		validation.Field(&u.Status, validation.In(
+			StatusInit,
+			StatusDraft,
+			StatusActive,
+		)),
 	)
 }
 
@@ -198,8 +214,18 @@ func (u *UpdateUser) Validate() error {
 	return validation.ValidateStruct(u,
 		validation.Field(&u.FirstName, validation.Required),
 		validation.Field(&u.LastName, validation.Required),
-		validation.Field(&u.Role, validation.Required, validation.In(RoleSuperUser, RoleAdmin, RoleManager, RoleClient, RoleUser)),
-		validation.Field(&u.Status, validation.In(0, 1, 2)),
+		validation.Field(&u.Role, validation.Required, validation.In(
+			RoleAdmin,
+			RoleClient,
+			RoleManager,
+			RoleSuperUser,
+			RoleUser,
+		)),
+		validation.Field(&u.Status, validation.In(
+			StatusInit,
+			StatusDraft,
+			StatusActive,
+		)),
 	)
 }
 

@@ -29,7 +29,7 @@ var (
 // Validate users model
 func (u *AuthRequest) Validate() error {
 	return validation.ValidateStruct(u,
-		validation.Field(&u.GrantType, validation.Required),
+		validation.Field(&u.GrantType, validation.Required, validation.In("password", "refresh_token")),
 	)
 }
 

@@ -151,7 +151,7 @@ func TestControllers_User_Create(t *testing.T) {
 			LastName:  "Snow",
 			Email:     "john@snow.com",
 			Role:      "user",
-			Password:  "Test123",
+			Password:  "Test123456",
 			Status:    models.StatusActive,
 			Active:    true,
 		}
@@ -176,7 +176,7 @@ func TestControllers_User_Create(t *testing.T) {
 			FirstName: "Admin",
 			LastName:  "Example",
 			Role:      "user",
-			Password:  "Test123",
+			Password:  "Test123456",
 			Status:    models.StatusActive,
 			Active:    true,
 		}
