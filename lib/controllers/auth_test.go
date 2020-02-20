@@ -2,7 +2,6 @@ package controllers_test
 
 import (
 	"net/http"
-	"net/http/httptest"
 	"os"
 	"testing"
 
@@ -48,14 +47,10 @@ func TestControllers_Auth_TokenHandler(t *testing.T) {
 			Password:     "testpass",
 		}
 
-		req := httptest.NewRequest(http.MethodPost, "/", helpers.ObjectToByte(t, body))
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		_, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", body, echo.New())
+		ctx.Set("AUTHORISED", true)
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-		c.Set("AUTHORISED", true)
-
-		err := ctl.TokenHandler(c)
+		err := ctl.TokenHandler(ctx)
 		if assert.Error(t, err) {
 			assert.Contains(t, err.Error(), "grant_type: must be a valid value.", "error message %s", "formatted")
 		}
@@ -70,14 +65,10 @@ func TestControllers_Auth_TokenHandler(t *testing.T) {
 			Password:     "wrong-pass",
 		}
 
-		req := httptest.NewRequest(http.MethodPost, "/", helpers.ObjectToByte(t, body))
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		_, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", body, echo.New())
+		ctx.Set("AUTHORISED", true)
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-		c.Set("AUTHORISED", true)
-
-		err := ctl.TokenHandler(c)
+		err := ctl.TokenHandler(ctx)
 		if assert.Error(t, err) {
 			assert.Contains(t, err.Error(), "invalid client ID or secret", "error message %s", "formatted")
 		}
@@ -91,14 +82,10 @@ func TestControllers_Auth_TokenHandler(t *testing.T) {
 			Password:     "wrong-pass",
 		}
 
-		req := httptest.NewRequest(http.MethodPost, "/", helpers.ObjectToByte(t, body))
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		_, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", body, echo.New())
+		ctx.Set("AUTHORISED", true)
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-		c.Set("AUTHORISED", true)
-
-		err := ctl.TokenHandler(c)
+		err := ctl.TokenHandler(ctx)
 		if assert.Error(t, err) {
 			assert.Contains(t, err.Error(), "client ID or secret cannot be empty", "error message %s", "formatted")
 		}
@@ -113,14 +100,10 @@ func TestControllers_Auth_TokenHandler(t *testing.T) {
 			Password:     "testpass",
 		}
 
-		req := httptest.NewRequest(http.MethodPost, "/", helpers.ObjectToByte(t, body))
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		_, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", body, echo.New())
+		ctx.Set("AUTHORISED", true)
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-		c.Set("AUTHORISED", true)
-
-		err := ctl.TokenHandler(c)
+		err := ctl.TokenHandler(ctx)
 		if assert.Error(t, err) {
 			assert.Contains(t, err.Error(), "invalid client ID or secret", "error message %s", "formatted")
 		}
@@ -134,14 +117,10 @@ func TestControllers_Auth_TokenHandler(t *testing.T) {
 			Password:  "testpass",
 		}
 
-		req := httptest.NewRequest(http.MethodPost, "/", helpers.ObjectToByte(t, body))
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		_, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", body, echo.New())
+		ctx.Set("AUTHORISED", true)
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-		c.Set("AUTHORISED", true)
-
-		err := ctl.TokenHandler(c)
+		err := ctl.TokenHandler(ctx)
 		if assert.Error(t, err) {
 			assert.Contains(t, err.Error(), "client ID or secret cannot be empty", "error message %s", "formatted")
 		}
@@ -160,14 +139,10 @@ func TestControllers_Auth_TokenHandler_Password(t *testing.T) {
 			Password:     "testpass",
 		}
 
-		req := httptest.NewRequest(http.MethodPost, "/", helpers.ObjectToByte(t, body))
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", body, echo.New())
+		ctx.Set("AUTHORISED", true)
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-		c.Set("AUTHORISED", true)
-
-		if assert.NoError(t, ctl.TokenHandler(c)) {
+		if assert.NoError(t, ctl.TokenHandler(ctx)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
 		}
 	})
@@ -181,14 +156,10 @@ func TestControllers_Auth_TokenHandler_Password(t *testing.T) {
 			Password:     "wrong-pass",
 		}
 
-		req := httptest.NewRequest(http.MethodPost, "/", helpers.ObjectToByte(t, body))
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		_, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", body, echo.New())
+		ctx.Set("AUTHORISED", true)
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-		c.Set("AUTHORISED", true)
-
-		err := ctl.TokenHandler(c)
+		err := ctl.TokenHandler(ctx)
 		if assert.Error(t, err) {
 			assert.Contains(t, err.Error(), "invalid username or password", "error message %s", "formatted")
 		}
@@ -203,14 +174,10 @@ func TestControllers_Auth_TokenHandler_Password(t *testing.T) {
 			Password:     "testpass",
 		}
 
-		req := httptest.NewRequest(http.MethodPost, "/", helpers.ObjectToByte(t, body))
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		_, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", body, echo.New())
+		ctx.Set("AUTHORISED", true)
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-		c.Set("AUTHORISED", true)
-
-		err := ctl.TokenHandler(c)
+		err := ctl.TokenHandler(ctx)
 		if assert.Error(t, err) {
 			assert.Contains(t, err.Error(), "invalid username or password", "error message %s", "formatted")
 		}
@@ -228,14 +195,10 @@ func TestControllers_Auth_TokenHandler_RefreshToken(t *testing.T) {
 			RefreshToken: "sdfsdf5K9QwC6mptVSJVvAuFvA4w245HsiXxfMpOtpzASJ4Rr6E",
 		}
 
-		req := httptest.NewRequest(http.MethodPost, "/", helpers.ObjectToByte(t, body))
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", body, echo.New())
+		ctx.Set("AUTHORISED", true)
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-		c.Set("AUTHORISED", true)
-
-		if assert.NoError(t, ctl.TokenHandler(c)) {
+		if assert.NoError(t, ctl.TokenHandler(ctx)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
 		}
 	})
@@ -247,14 +210,10 @@ func TestControllers_Auth_TokenHandler_RefreshToken(t *testing.T) {
 			ClientSecret: "SecretSuper",
 		}
 
-		req := httptest.NewRequest(http.MethodPost, "/", helpers.ObjectToByte(t, body))
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		_, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", body, echo.New())
+		ctx.Set("AUTHORISED", true)
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-		c.Set("AUTHORISED", true)
-
-		err := ctl.TokenHandler(c)
+		err := ctl.TokenHandler(ctx)
 		if assert.Error(t, err) {
 			assert.Contains(t, err.Error(), "refresh token is empty or missing", "error message %s", "formatted")
 		}
@@ -268,14 +227,10 @@ func TestControllers_Auth_TokenHandler_RefreshToken(t *testing.T) {
 			RefreshToken: "wrong",
 		}
 
-		req := httptest.NewRequest(http.MethodPost, "/", helpers.ObjectToByte(t, body))
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		_, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", body, echo.New())
+		ctx.Set("AUTHORISED", true)
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-		c.Set("AUTHORISED", true)
-
-		err := ctl.TokenHandler(c)
+		err := ctl.TokenHandler(ctx)
 		if assert.Error(t, err) {
 			assert.Contains(t, err.Error(), "refresh token not found", "error message %s", "formatted")
 		}
@@ -289,14 +244,10 @@ func TestControllers_Auth_TokenHandler_RefreshToken(t *testing.T) {
 			RefreshToken: "ExpiredRefreshToken",
 		}
 
-		req := httptest.NewRequest(http.MethodPost, "/", helpers.ObjectToByte(t, body))
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		_, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", body, echo.New())
+		ctx.Set("AUTHORISED", true)
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-		c.Set("AUTHORISED", true)
-
-		err := ctl.TokenHandler(c)
+		err := ctl.TokenHandler(ctx)
 		if assert.Error(t, err) {
 			assert.Contains(t, err.Error(), "refresh token expired", "error message %s", "formatted")
 		}

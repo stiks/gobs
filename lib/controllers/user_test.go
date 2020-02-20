@@ -2,7 +2,6 @@ package controllers_test
 
 import (
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/google/uuid"
@@ -72,14 +71,10 @@ func TestControllers_User_List(t *testing.T) {
 	ctl := controllers.NewUserController(_userSrv)
 
 	t.Run("All users", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodGet, "/", nil)
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec, ctx := helpers.RequestWithBody(http.MethodGet, "/", nil, echo.New())
+		ctx.Set("USER_ID", "775a5b37-1742-4e54-9439-0357e768b011")
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-		c.Set("USER_ID", "775a5b37-1742-4e54-9439-0357e768b011")
-
-		err := ctl.List(c)
+		err := ctl.List(ctx)
 		if assert.NoError(t, err) {
 			assert.Contains(t, rec.Body.String(), "peter@test.com")
 		}
@@ -90,51 +85,39 @@ func TestControllers_User_View(t *testing.T) {
 	ctl := controllers.NewUserController(_userSrv)
 
 	t.Run("Invalid UUID", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodDelete, "/", nil)
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		_, ctx := helpers.RequestWithBody(http.MethodGet, "/", nil, echo.New())
+		ctx.Set("USER_ID", "775a5b37-1742-4e54-9439-0357e768b011")
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-		c.Set("USER_ID", "775a5b37-1742-4e54-9439-0357e768b011")
-
-		err := ctl.View(c)
+		err := ctl.View(ctx)
 		if assert.Error(t, err) {
 			assert.Contains(t, err.Error(), "invalid UUID", "error message %s", "formatted")
 		}
 	})
 
 	t.Run("Existing user", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodDelete, "/", nil)
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-
-		rec := httptest.NewRecorder()
 		e := echo.New()
 		e.SetMaxParam(2)
 
-		c := e.NewContext(req, rec)
-		c.SetPath("/users/:id")
-		c.SetParamNames("id")
-		c.SetParamValues("775a5b37-1742-4e54-9439-0357e768b011")
+		rec, ctx := helpers.RequestWithBody(http.MethodGet, "/", nil, e)
+		ctx.SetPath("/users/:id")
+		ctx.SetParamNames("id")
+		ctx.SetParamValues("775a5b37-1742-4e54-9439-0357e768b011")
 
-		if assert.NoError(t, ctl.View(c)) {
+		if assert.NoError(t, ctl.View(ctx)) {
 			assert.Contains(t, rec.Body.String(), "peter@test.com")
 		}
 	})
 
 	t.Run("Non existing user", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodDelete, "/", nil)
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-
-		rec := httptest.NewRecorder()
 		e := echo.New()
 		e.SetMaxParam(2)
 
-		c := e.NewContext(req, rec)
-		c.SetPath("/users/:id")
-		c.SetParamNames("id")
-		c.SetParamValues("5fcc94e5-c6aa-4320-8469-f5021af54b88")
+		_, ctx := helpers.RequestWithBody(http.MethodGet, "/", nil, e)
+		ctx.SetPath("/users/:id")
+		ctx.SetParamNames("id")
+		ctx.SetParamValues("5fcc94e5-c6aa-4320-8469-f5021af54b88")
 
-		err := ctl.View(c)
+		err := ctl.View(ctx)
 		if assert.Error(t, err) {
 			assert.Contains(t, err.Error(), "user not found", "error message %s", "formatted")
 		}
@@ -156,14 +139,10 @@ func TestControllers_User_Create(t *testing.T) {
 			Active:    true,
 		}
 
-		req := httptest.NewRequest(http.MethodPost, "/", helpers.ObjectToByte(t, user))
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", user, echo.New())
+		ctx.Set("USER_ID", "775a5b37-1742-4e54-9439-0357e768b011")
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-		c.Set("USER_ID", "775a5b37-1742-4e54-9439-0357e768b011")
-
-		err := ctl.Create(c)
+		err := ctl.Create(ctx)
 		if assert.NoError(t, err) {
 			assert.Equal(t, http.StatusCreated, rec.Code)
 		}
@@ -181,14 +160,10 @@ func TestControllers_User_Create(t *testing.T) {
 			Active:    true,
 		}
 
-		req := httptest.NewRequest(http.MethodPost, "/", helpers.ObjectToByte(t, user))
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		_, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", user, echo.New())
+		ctx.Set("USER_ID", "775a5b37-1742-4e54-9439-0357e768b011")
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-		c.Set("USER_ID", "775a5b37-1742-4e54-9439-0357e768b011")
-
-		err := ctl.Create(c)
+		err := ctl.Create(ctx)
 		if assert.Error(t, err) {
 			assert.Contains(t, err.Error(), "username taken", "error message %s", "formatted")
 		}
@@ -199,14 +174,10 @@ func TestControllers_User_Update(t *testing.T) {
 	ctl := controllers.NewUserController(_userSrv)
 
 	t.Run("Invalid UUID", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodDelete, "/", nil)
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		_, ctx := helpers.RequestWithBody(http.MethodPut, "/", nil, echo.New())
+		ctx.Set("USER_ID", "775a5b37-1742-4e54-9439-0357e768b011")
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-		c.Set("USER_ID", "775a5b37-1742-4e54-9439-0357e768b011")
-
-		err := ctl.Update(c)
+		err := ctl.Update(ctx)
 		if assert.Error(t, err) {
 			assert.Contains(t, err.Error(), "invalid UUID", "error message %s", "formatted")
 		}
@@ -222,39 +193,30 @@ func TestControllers_User_Update(t *testing.T) {
 			Status:    2,
 		}
 
-		req := httptest.NewRequest(http.MethodDelete, "/", helpers.ObjectToByte(t, body))
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-
 		e := echo.New()
 		e.SetMaxParam(2)
 
-		rec := httptest.NewRecorder()
-		c := e.NewContext(req, rec)
+		rec, ctx := helpers.RequestObjectWithBody(t, http.MethodPut, "/", body, e)
+		ctx.SetPath("/users/:id")
+		ctx.SetParamNames("id")
+		ctx.SetParamValues("775a5b37-1742-4e54-9439-0357e768b011")
 
-		c.SetPath("/users/:id")
-		c.SetParamNames("id")
-		c.SetParamValues("775a5b37-1742-4e54-9439-0357e768b011")
-
-		if assert.NoError(t, ctl.Update(c)) {
+		if assert.NoError(t, ctl.Update(ctx)) {
 			assert.Contains(t, rec.Body.String(), "peter@test.com")
 		}
 	})
 
 	t.Run("Non existing user", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodDelete, "/", nil)
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-
 		e := echo.New()
 		e.SetMaxParam(2)
 
-		rec := httptest.NewRecorder()
-		c := e.NewContext(req, rec)
+		_, ctx := helpers.RequestWithBody(http.MethodPut, "/", nil, e)
 
-		c.SetPath("/users/:id")
-		c.SetParamNames("id")
-		c.SetParamValues("5fcc94e5-c6aa-4320-8469-f5021af54b88")
+		ctx.SetPath("/users/:id")
+		ctx.SetParamNames("id")
+		ctx.SetParamValues("5fcc94e5-c6aa-4320-8469-f5021af54b88")
 
-		err := ctl.Update(c)
+		err := ctl.Update(ctx)
 		if assert.Error(t, err) {
 			assert.Contains(t, err.Error(), "user not found", "error message %s", "formatted")
 		}
@@ -265,51 +227,39 @@ func TestControllers_User_Delete(t *testing.T) {
 	ctl := controllers.NewUserController(_userSrv)
 
 	t.Run("Invalid UUID", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodDelete, "/", nil)
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		_, ctx := helpers.RequestWithBody(http.MethodDelete, "/", nil, echo.New())
+		ctx.Set("USER_ID", "775a5b37-1742-4e54-9439-0357e768b011")
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-		c.Set("USER_ID", "775a5b37-1742-4e54-9439-0357e768b011")
-
-		err := ctl.Delete(c)
+		err := ctl.Delete(ctx)
 		if assert.Error(t, err) {
 			assert.Contains(t, err.Error(), "invalid UUID", "error message %s", "formatted")
 		}
 	})
 
 	t.Run("Existing user", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodDelete, "/", nil)
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-
 		e := echo.New()
 		e.SetMaxParam(2)
 
-		rec := httptest.NewRecorder()
-		c := e.NewContext(req, rec)
+		_, ctx := helpers.RequestWithBody(http.MethodDelete, "/", nil, e)
 
-		c.SetPath("/users/:id")
-		c.SetParamNames("id")
-		c.SetParamValues("775a5b37-1742-4e54-9439-0357e768b011")
+		ctx.SetPath("/users/:id")
+		ctx.SetParamNames("id")
+		ctx.SetParamValues("775a5b37-1742-4e54-9439-0357e768b011")
 
-		assert.NoError(t, ctl.Delete(c))
+		assert.NoError(t, ctl.Delete(ctx))
 	})
 
 	t.Run("Non existing user", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodDelete, "/", nil)
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-
 		e := echo.New()
 		e.SetMaxParam(2)
 
-		rec := httptest.NewRecorder()
-		c := e.NewContext(req, rec)
+		_, ctx := helpers.RequestWithBody(http.MethodDelete, "/", nil, e)
 
-		c.SetPath("/users/:id")
-		c.SetParamNames("id")
-		c.SetParamValues("5fcc94e5-c6aa-4320-8469-f5021af54b88")
+		ctx.SetPath("/users/:id")
+		ctx.SetParamNames("id")
+		ctx.SetParamValues("5fcc94e5-c6aa-4320-8469-f5021af54b88")
 
-		err := ctl.Delete(c)
+		err := ctl.Delete(ctx)
 		if assert.Error(t, err) {
 			assert.Contains(t, err.Error(), "user not found", "error message %s", "formatted")
 		}

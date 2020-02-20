@@ -2,7 +2,6 @@ package controllers_test
 
 import (
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/labstack/echo/v4"
@@ -47,41 +46,29 @@ func TestControllers_Account_GetProfile(t *testing.T) {
 	ctl := controllers.NewAccountController(_userSrv)
 
 	t.Run("Invalid UUID", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodGet, "/", nil)
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		_, ctx := helpers.RequestWithBody(http.MethodGet, "/", nil, echo.New())
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-
-		err := ctl.GetProfile(c)
+		err := ctl.GetProfile(ctx)
 		if assert.Error(t, err) {
 			assert.Contains(t, err.Error(), "invalid UUID", "error message %s", "formatted")
 		}
 	})
 
 	t.Run("Non-existing user", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodGet, "/", nil)
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		_, ctx := helpers.RequestWithBody(http.MethodGet, "/", nil, echo.New())
+		ctx.Set("USER_ID", "921c3683-e8e6-41fd-8adb-cdb54429ad51")
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-		c.Set("USER_ID", "921c3683-e8e6-41fd-8adb-cdb54429ad51")
-
-		err := ctl.GetProfile(c)
+		err := ctl.GetProfile(ctx)
 		if assert.Error(t, err) {
 			assert.Contains(t, err.Error(), "user not found", "error message %s", "formatted")
 		}
 	})
 
 	t.Run("Existing user", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodGet, "/", nil)
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec, ctx := helpers.RequestWithBody(http.MethodGet, "/", nil, echo.New())
+		ctx.Set("USER_ID", "775a5b37-1742-4e54-9439-0357e768b011")
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-		c.Set("USER_ID", "775a5b37-1742-4e54-9439-0357e768b011")
-
-		err := ctl.GetProfile(c)
+		err := ctl.GetProfile(ctx)
 		if assert.NoError(t, err) {
 			assert.Equal(t, http.StatusOK, rec.Code)
 			assert.Contains(t, rec.Body.String(), "peter@test.com")
@@ -93,13 +80,9 @@ func TestControllers_Account_ResetRequest(t *testing.T) {
 	ctl := controllers.NewAccountController(_userSrv)
 
 	t.Run("Non-existing user", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodPost, "/", helpers.ObjectToByte(t, models.PasswordResetRequest{Email: "test@google.com"}))
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", models.PasswordResetRequest{Email: "test@google.com"}, echo.New())
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-
-		err := ctl.ResetRequest(c)
+		err := ctl.ResetRequest(ctx)
 		if assert.NoError(t, err) {
 			assert.Equal(t, http.StatusOK, rec.Code)
 			assert.Contains(t, rec.Body.String(), "ok")
@@ -107,13 +90,9 @@ func TestControllers_Account_ResetRequest(t *testing.T) {
 	})
 
 	t.Run("Existing user", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodPost, "/", helpers.ObjectToByte(t, models.PasswordResetRequest{Email: "peter@test.com"}))
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", models.PasswordResetRequest{Email: "peter@test.com"}, echo.New())
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-
-		err := ctl.ResetRequest(c)
+		err := ctl.ResetRequest(ctx)
 		if assert.NoError(t, err) {
 			assert.Equal(t, http.StatusOK, rec.Code)
 			assert.Contains(t, rec.Body.String(), "ok")
@@ -125,13 +104,9 @@ func TestControllers_Account_PasswordConfirm(t *testing.T) {
 	ctl := controllers.NewAccountController(_userSrv)
 
 	t.Run("Blank code", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodPost, "/", helpers.ObjectToByte(t, models.PasswordResetRequest{Email: "test@google.com"}))
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		_, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", models.PasswordResetRequest{Email: "test@google.com"}, echo.New())
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-
-		err := ctl.PasswordConfirm(c)
+		err := ctl.PasswordConfirm(ctx)
 		if assert.Error(t, err) {
 			assert.Contains(t, err.Error(), "email confirmation code cannot be blank")
 		}
@@ -143,13 +118,9 @@ func TestControllers_Account_PasswordConfirm(t *testing.T) {
 			Password: "ASdkjnw3rwdf234sdf",
 		}
 
-		req := httptest.NewRequest(http.MethodPost, "/", helpers.ObjectToByte(t, data))
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		_, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", data, echo.New())
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-
-		err := ctl.PasswordConfirm(c)
+		err := ctl.PasswordConfirm(ctx)
 		if assert.Error(t, err) {
 			assert.Contains(t, err.Error(), "invalid email confirmation code supplied")
 		}
@@ -161,13 +132,9 @@ func TestControllers_Account_PasswordConfirm(t *testing.T) {
 			Password: "R0otIsG0od",
 		}
 
-		req := httptest.NewRequest(http.MethodPost, "/", helpers.ObjectToByte(t, data))
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		_, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", data, echo.New())
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-
-		err := ctl.PasswordConfirm(c)
+		err := ctl.PasswordConfirm(ctx)
 		if assert.Error(t, err) {
 			assert.Contains(t, err.Error(), "user account is locked")
 		}
@@ -179,26 +146,18 @@ func TestControllers_Account_PasswordConfirm(t *testing.T) {
 			Password: "R0otIsG0od",
 		}
 
-		req := httptest.NewRequest(http.MethodPost, "/", helpers.ObjectToByte(t, data))
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		_, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", data, echo.New())
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-
-		err := ctl.PasswordConfirm(c)
+		err := ctl.PasswordConfirm(ctx)
 		if assert.Error(t, err) {
 			assert.Contains(t, err.Error(), "email confirmation code already used or expired")
 		}
 	})
 
 	t.Run("Existing code, blank password", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodPost, "/", helpers.ObjectToByte(t, models.EmailConfirmationCode{Code: "ZXqEMubf5DinaTHuOyJIm1z3Dq"}))
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		_, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", models.EmailConfirmationCode{Code: "ZXqEMubf5DinaTHuOyJIm1z3Dq"}, echo.New())
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-
-		err := ctl.PasswordConfirm(c)
+		err := ctl.PasswordConfirm(ctx)
 		if assert.Error(t, err) {
 			assert.Contains(t, err.Error(), "password: cannot be blank")
 		}
@@ -210,13 +169,9 @@ func TestControllers_Account_PasswordConfirm(t *testing.T) {
 			Password: "123",
 		}
 
-		req := httptest.NewRequest(http.MethodPost, "/", helpers.ObjectToByte(t, data))
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		_, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", data, echo.New())
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-
-		err := ctl.PasswordConfirm(c)
+		err := ctl.PasswordConfirm(ctx)
 		if assert.Error(t, err) {
 			assert.Contains(t, err.Error(), "password: the length must be between 8")
 		}
@@ -228,13 +183,9 @@ func TestControllers_Account_PasswordConfirm(t *testing.T) {
 			Password: "wFbxjwfIEVjTq7YbIGdw0d4u07wFbxjwfIEVjTq7YbIGdw0d4u07wFbxjwfIEVjTq7YbIGdw0d4u07wFbxjwfIEVjTq7YbIGdw0d4u07",
 		}
 
-		req := httptest.NewRequest(http.MethodPost, "/", helpers.ObjectToByte(t, data))
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		_, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", data, echo.New())
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-
-		err := ctl.PasswordConfirm(c)
+		err := ctl.PasswordConfirm(ctx)
 		if assert.Error(t, err) {
 			assert.Contains(t, err.Error(), "password: the length must be between 8")
 		}
@@ -246,13 +197,9 @@ func TestControllers_Account_PasswordConfirm(t *testing.T) {
 			Password: "wFbxjwfIEVjTq7YbIGdw0d4u07",
 		}
 
-		req := httptest.NewRequest(http.MethodPost, "/", helpers.ObjectToByte(t, data))
-		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", data, echo.New())
 
-		rec := httptest.NewRecorder()
-		c := echo.New().NewContext(req, rec)
-
-		err := ctl.PasswordConfirm(c)
+		err := ctl.PasswordConfirm(ctx)
 		if assert.NoError(t, err) {
 			assert.Equal(t, http.StatusOK, rec.Code)
 			assert.Contains(t, rec.Body.String(), "ok")

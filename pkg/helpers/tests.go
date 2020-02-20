@@ -3,6 +3,7 @@ package helpers
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"log"
 	"net/http/httptest"
 	"testing"
@@ -42,6 +43,7 @@ func ObjectToByte(t *testing.T, obj interface{}) *bytes.Reader {
 	return bytes.NewReader(b)
 }
 
+// RequestTest ...
 func RequestTest(method, path string, e *echo.Echo) (int, string) {
 	req := httptest.NewRequest(method, path, nil)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -51,4 +53,24 @@ func RequestTest(method, path string, e *echo.Echo) (int, string) {
 	e.ServeHTTP(rec, req)
 
 	return rec.Code, rec.Body.String()
+}
+
+// RequestWithBody ...
+func RequestWithBody(method, path string, body io.Reader, e *echo.Echo) (*httptest.ResponseRecorder, echo.Context) {
+	req := httptest.NewRequest(method, path, body)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+	rec := httptest.NewRecorder()
+
+	return rec, e.NewContext(req, rec)
+}
+
+// RequestObjectWithBody ...
+func RequestObjectWithBody(t *testing.T, method, path string, data interface{}, e *echo.Echo) (*httptest.ResponseRecorder, echo.Context) {
+	req := httptest.NewRequest(method, path, ObjectToByte(t, data))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+	rec := httptest.NewRecorder()
+
+	return rec, e.NewContext(req, rec)
 }

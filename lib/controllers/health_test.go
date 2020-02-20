@@ -2,7 +2,6 @@ package controllers_test
 
 import (
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/labstack/echo/v4"
@@ -27,7 +26,7 @@ func TestControllers_Health_Routes(t *testing.T) {
 
 func TestControllers_Health_HealthCheck(t *testing.T) {
 	ctl := controllers.NewHealthController()
-	c := echo.New().NewContext(httptest.NewRequest(http.MethodGet, "/", nil), httptest.NewRecorder())
+	_, ctx := helpers.RequestWithBody(http.MethodPut, "/", nil, echo.New())
 
-	assert.NoError(t, ctl.HealthCheck(c))
+	assert.NoError(t, ctl.HealthCheck(ctx))
 }
