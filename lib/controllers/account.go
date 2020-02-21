@@ -33,6 +33,8 @@ func NewAccountController(userSrv services.UserService) AccountControllerInterfa
 
 // Routes registers routes
 func (ctl *accountController) Routes(g *echo.Group) {
+	g.Use(auth.EnableAuthorisation())
+
 	g.GET("/account/profile", ctl.GetProfile, auth.RequiredAuth())
 	g.POST("/account/reset-confirm", ctl.PasswordConfirm)
 	g.POST("/account/reset", ctl.ResetRequest)

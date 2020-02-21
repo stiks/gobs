@@ -22,7 +22,7 @@ func TestControllers_Account_Routes(t *testing.T) {
 		controllers.NewAccountController(_userSrv).Routes(e.Group("api"))
 
 		c, _ := helpers.RequestTest(http.MethodGet, "/api/account/profile", e)
-		assert.Equal(t, 401, c)
+		assert.Equal(t, 400, c)
 	})
 
 	t.Run("Post reset confirmation", func(t *testing.T) {

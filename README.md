@@ -6,14 +6,14 @@
 
 This is not yet another Go REST framework. The goal for this project is to come as close as possible to [twelve-factor app](https://12factor.net/) methodology.
 
-Goals:
+#### Goals
 * Declarative documentation and automation
 * Maximum portability
 * Support public clouds, [kubernetes](https://kubernetes.io/) and on-premise deployments
 * Easy to scale
-* Have UI ([gobs-react](https://github.com/stiks/gobs-react))
+* Have UI ([gobs-react](https://github.com/stiks/gobs-react)) with functionality of typical CMS
 
-Inspired by:
+#### Inspired by
 * Domain Driven Design
 * Clean Architecture
 
