@@ -42,14 +42,6 @@ func TestControllers_Account_Routes(t *testing.T) {
 		assert.Equal(t, 400, c)
 	})
 
-	t.Run("User registration", func(t *testing.T) {
-		e := echo.New()
-		controllers.NewAccountController(_userSrv).Routes(e.Group("api"))
-
-		c, _ := helpers.RequestTest(http.MethodPost, "/api/account/register", e)
-		assert.Equal(t, 400, c)
-	})
-
 	t.Run("Confirmation email address", func(t *testing.T) {
 		e := echo.New()
 		controllers.NewAccountController(_userSrv).Routes(e.Group("api"))
@@ -93,47 +85,6 @@ func TestControllers_Account_GetProfile(t *testing.T) {
 	})
 }
 
-func TestControllers_Account_Register(t *testing.T) {
-	ctl := controllers.NewAccountController(_userSrv)
-
-	t.Run("Non-existing user", func(t *testing.T) {
-		user := models.CreateUser{
-			ID:        uuid.New(),
-			FirstName: "John",
-			LastName:  "Snow",
-			Email:     "google@test.com",
-			Password:  "Test123456",
-		}
-
-		rec, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", user, echo.New())
-
-		err := ctl.Register(ctx)
-		if assert.NoError(t, err) {
-			assert.Equal(t, http.StatusCreated, rec.Code)
-		}
-	})
-
-	t.Run("Existing user", func(t *testing.T) {
-		user := models.CreateUser{
-			ID:        uuid.New(),
-			Email:     "admin@test.com",
-			FirstName: "Admin",
-			LastName:  "Example",
-			Role:      "user",
-			Password:  "Test123456",
-			Status:    models.StatusActive,
-			Active:    true,
-		}
-
-		_, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", user, echo.New())
-
-		err := ctl.Register(ctx)
-		if assert.Error(t, err) {
-			assert.Contains(t, err.Error(), "username taken", "error message %s", "formatted")
-		}
-	})
-}
-
 func TestControllers_Account_EmailConfirm(t *testing.T) {
 	ctl := controllers.NewAccountController(_userSrv)
 
@@ -161,7 +112,7 @@ func TestControllers_Account_EmailConfirm(t *testing.T) {
 
 		err := ctl.EmailConfirm(ctx)
 		if assert.Error(t, err) {
-			assert.Contains(t, err.Error(), "email confirmation code cannot be blank", "error message %s", "formatted")
+			assert.Contains(t, err.Error(), "ode: cannot be blank", "error message %s", "formatted")
 		}
 	})
 
@@ -240,7 +191,7 @@ func TestControllers_Account_PasswordConfirm(t *testing.T) {
 
 		err := ctl.PasswordConfirm(ctx)
 		if assert.Error(t, err) {
-			assert.Contains(t, err.Error(), "email confirmation code cannot be blank")
+			assert.Contains(t, err.Error(), "ode: cannot be blank")
 		}
 	})
 

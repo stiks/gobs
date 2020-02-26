@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/gommon/random"
 
 	"github.com/stiks/gobs/lib/models"
 	"github.com/stiks/gobs/lib/services"
@@ -19,7 +18,6 @@ type AccountControllerInterface interface {
 	ResetRequest(c echo.Context) error
 	EmailConfirm(c echo.Context) error
 	GetProfile(c echo.Context) error
-	Register(c echo.Context) error
 	Routes(g *echo.Group)
 }
 
@@ -38,7 +36,6 @@ func NewAccountController(userSrv services.UserService) AccountControllerInterfa
 func (ctl *accountController) Routes(g *echo.Group) {
 	g.POST("/account/reset-confirm", ctl.PasswordConfirm)
 	g.POST("/account/reset", ctl.ResetRequest)
-	g.POST("/account/register", ctl.Register)
 	g.POST("/account/email-confirm", ctl.EmailConfirm)
 	g.GET("/account/profile", ctl.GetProfile, auth.EnableAuthorisation(), auth.RequiredAuth())
 }
@@ -55,16 +52,10 @@ func (ctl *accountController) GetProfile(c echo.Context) error {
 	}
 
 	user, err := ctl.user.GetByID(ctx, userID)
-	if err != nil && err == models.ErrUserNotFound {
-		xlog.Errorf(ctx, "User doesn't exist, %s", err.Error())
-
-		return echo.NewHTTPError(http.StatusNotFound, models.ErrUserNotFound.Error())
-	}
-
 	if err != nil {
 		xlog.Errorf(ctx, "Unable to find user, %s", err.Error())
 
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	xlog.Infof(ctx, "User %d login successful", userID)
@@ -92,52 +83,9 @@ func (ctl *accountController) ResetRequest(c echo.Context) error {
 	_, err := ctl.user.ResetPassword(ctx, req.Email)
 	if err != nil {
 		xlog.Debugf(ctx, "Password reset error: %s", err.Error())
-
-		// For security reason
-		return c.JSON(http.StatusOK, echo.Map{"status": "ok"})
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{"status": "ok"})
-}
-
-// ResetRequest ...
-func (ctl *accountController) Register(c echo.Context) error {
-	ctx := c.Request().Context()
-
-	xlog.Debugf(ctx, "New user registration request")
-
-	req := new(models.CreateUser)
-	if err := c.Bind(req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-
-	// set manually role to user
-	req.Role = models.RoleUser
-	req.Status = models.StatusInit
-
-	if err := req.Validate(); err != nil {
-		xlog.Errorf(ctx, "Unable to validate query, err: %s", err.Error())
-
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-
-	// Checking if users already exist
-	if _, err := ctl.user.GetByUsername(ctx, req.Email); err == nil {
-		xlog.Infof(ctx, "User already exist")
-
-		return echo.NewHTTPError(http.StatusConflict, models.ErrUsernameTaken.Error())
-	}
-
-	user := req.ToUser(nil)
-	user.ValidationHash = random.String(32, random.Alphanumeric)
-
-	if _, err := ctl.user.Create(ctx, req.Password, user); err != nil {
-		xlog.Errorf(ctx, "Unable to create user, err: %s", err.Error())
-
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-	}
-
-	return c.JSON(http.StatusCreated, echo.Map{"status": "ok"})
 }
 
 // PasswordConfirm ...
@@ -151,12 +99,6 @@ func (ctl *accountController) PasswordConfirm(c echo.Context) error {
 		xlog.Errorf(ctx, "Unable to bind, err: %s", err.Error())
 
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-
-	if len(req.Code) <= 0 {
-		xlog.Errorf(ctx, "Email confirmation code is blank")
-
-		return echo.NewHTTPError(http.StatusBadRequest, models.ErrEmailCodeIsEmpty.Error())
 	}
 
 	if err := req.Validate(); err != nil {
@@ -200,19 +142,11 @@ func (ctl *accountController) PasswordConfirm(c echo.Context) error {
 func (ctl *accountController) EmailConfirm(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	xlog.Debugf(ctx, "User going to password confirmation page")
-
 	req := new(models.ConfirmEmail)
 	if err := c.Bind(req); err != nil {
 		xlog.Errorf(ctx, "Unable to bind, err: %s", err.Error())
 
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-
-	if len(req.Code) <= 0 {
-		xlog.Errorf(ctx, "Email confirmation code is blank")
-
-		return echo.NewHTTPError(http.StatusBadRequest, models.ErrEmailCodeIsEmpty.Error())
 	}
 
 	if err := req.Validate(); err != nil {
