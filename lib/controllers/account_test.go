@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 
@@ -72,6 +73,47 @@ func TestControllers_Account_GetProfile(t *testing.T) {
 		if assert.NoError(t, err) {
 			assert.Equal(t, http.StatusOK, rec.Code)
 			assert.Contains(t, rec.Body.String(), "peter@test.com")
+		}
+	})
+}
+
+func TestControllers_Account_Register(t *testing.T) {
+	ctl := controllers.NewAccountController(_userSrv)
+
+	t.Run("Non-existing user", func(t *testing.T) {
+		user := models.CreateUser{
+			ID:        uuid.New(),
+			FirstName: "John",
+			LastName:  "Snow",
+			Email:     "google@test.com",
+			Password:  "Test123456",
+		}
+
+		rec, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", user, echo.New())
+
+		err := ctl.Register(ctx)
+		if assert.NoError(t, err) {
+			assert.Equal(t, http.StatusCreated, rec.Code)
+		}
+	})
+
+	t.Run("Existing user", func(t *testing.T) {
+		user := models.CreateUser{
+			ID:        uuid.New(),
+			Email:     "admin@test.com",
+			FirstName: "Admin",
+			LastName:  "Example",
+			Role:      "user",
+			Password:  "Test123456",
+			Status:    models.StatusActive,
+			Active:    true,
+		}
+
+		_, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", user, echo.New())
+
+		err := ctl.Register(ctx)
+		if assert.Error(t, err) {
+			assert.Contains(t, err.Error(), "username taken", "error message %s", "formatted")
 		}
 	})
 }

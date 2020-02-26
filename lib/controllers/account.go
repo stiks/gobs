@@ -17,6 +17,7 @@ type AccountControllerInterface interface {
 	PasswordConfirm(c echo.Context) error
 	ResetRequest(c echo.Context) error
 	GetProfile(c echo.Context) error
+	Register(c echo.Context) error
 	Routes(g *echo.Group)
 }
 
@@ -33,11 +34,10 @@ func NewAccountController(userSrv services.UserService) AccountControllerInterfa
 
 // Routes registers routes
 func (ctl *accountController) Routes(g *echo.Group) {
-	g.Use(auth.EnableAuthorisation())
-
-	g.GET("/account/profile", ctl.GetProfile, auth.RequiredAuth())
 	g.POST("/account/reset-confirm", ctl.PasswordConfirm)
 	g.POST("/account/reset", ctl.ResetRequest)
+	g.POST("/account/register", ctl.Register)
+	g.GET("/account/profile", ctl.GetProfile, auth.EnableAuthorisation(), auth.RequiredAuth())
 }
 
 // GetProfile ...
@@ -95,6 +95,43 @@ func (ctl *accountController) ResetRequest(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{"status": "ok"})
+}
+
+// ResetRequest ...
+func (ctl *accountController) Register(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	xlog.Debugf(ctx, "New user registration request")
+
+	req := new(models.CreateUser)
+	if err := c.Bind(req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	// set manually role to user
+	req.Role = models.RoleUser
+	req.Status = models.StatusInit
+
+	if err := req.Validate(); err != nil {
+		xlog.Errorf(ctx, "Unable to validate query, err: %s", err.Error())
+
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	// Checking if users already exist
+	if _, err := ctl.user.GetByUsername(ctx, req.Email); err == nil {
+		xlog.Infof(ctx, "User already exist")
+
+		return echo.NewHTTPError(http.StatusConflict, models.ErrUsernameTaken.Error())
+	}
+
+	if _, err := ctl.user.Create(ctx, req.Password, req.ToUser(nil)); err != nil {
+		xlog.Errorf(ctx, "Unable to create user, err: %s", err.Error())
+
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(http.StatusCreated, echo.Map{"status": "ok"})
 }
 
 // PasswordConfirm ...

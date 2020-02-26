@@ -115,10 +115,10 @@ func (ctl *userController) Create(c echo.Context) error {
 
 	// Checking if users already exist
 	if _, err := ctl.user.GetByUsername(ctx, u.Email); err == nil {
-		return echo.NewHTTPError(http.StatusConflict, models.ErrUsernameTaken)
+		return echo.NewHTTPError(http.StatusConflict, models.ErrUsernameTaken.Error())
 	}
 
-	user, err := ctl.user.Create(ctx, u.Password, u.ToUser(id))
+	user, err := ctl.user.Create(ctx, u.Password, u.ToUser(&id))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}

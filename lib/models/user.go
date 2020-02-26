@@ -180,7 +180,7 @@ func (u *CreateUser) GeneratePassword() {
 }
 
 // ToUser ...
-func (u *CreateUser) ToUser(id uuid.UUID) *User {
+func (u *CreateUser) ToUser(id *uuid.UUID) *User {
 	user := &User{
 		ID:        uuid.New(),
 		Email:     u.Email,
@@ -189,7 +189,10 @@ func (u *CreateUser) ToUser(id uuid.UUID) *User {
 		Status:    u.Status,
 		Role:      u.Role,
 		IsActive:  u.Active,
-		OwnerID:   id,
+	}
+
+	if id != nil {
+		user.OwnerID = *id
 	}
 
 	// If password is empty, auto generate something

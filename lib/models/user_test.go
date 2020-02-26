@@ -364,7 +364,7 @@ func TestModel_CreateUser_ToUser(t *testing.T) {
 
 		id := uuid.New()
 
-		user := newUser.ToUser(id)
+		user := newUser.ToUser(&id)
 
 		assert.Equal(t, "John", user.FirstName)
 		assert.Equal(t, "Snow", user.LastName)
@@ -384,13 +384,33 @@ func TestModel_CreateUser_ToUser(t *testing.T) {
 
 		id := uuid.New()
 
-		user := newUser.ToUser(id)
+		user := newUser.ToUser(&id)
 
 		assert.Equal(t, "John", user.FirstName)
 		assert.Equal(t, "Snow", user.LastName)
 		assert.Equal(t, "john@snow.com", user.Email)
 		assert.Equal(t, models.StatusActive, user.Status)
 		assert.Equal(t, models.RoleAdmin, user.Role)
+		assert.NotEmpty(t, user.PasswordHash)
+	})
+
+	t.Run("Without owner id", func(t *testing.T) {
+		newUser := models.CreateUser{
+			FirstName: "John",
+			LastName:  "Snow",
+			Email:     "john@snow.com",
+			Role:      models.RoleAdmin,
+			Status:    models.StatusActive,
+		}
+
+		user := newUser.ToUser(nil)
+
+		assert.Equal(t, "John", user.FirstName)
+		assert.Equal(t, "Snow", user.LastName)
+		assert.Equal(t, "john@snow.com", user.Email)
+		assert.Equal(t, models.StatusActive, user.Status)
+		assert.Equal(t, models.RoleAdmin, user.Role)
+		assert.Equal(t, "00000000-0000-0000-0000-000000000000", user.OwnerID.String())
 		assert.NotEmpty(t, user.PasswordHash)
 	})
 }
