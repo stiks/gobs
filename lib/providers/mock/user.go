@@ -52,7 +52,7 @@ var (
 			PasswordResetHash: "ZXqEMubf5DinaTHuOyJIm1z3Dq",
 			PasswordResetAt:   time.Now(),
 			IsActive:          false,
-			ValidationHash:    "SomeHash",
+			ValidationHash:    "SomeHash123",
 			CreatedAt:         time.Now(),
 			UpdatedAt:         time.Now(),
 		},

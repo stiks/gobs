@@ -32,6 +32,10 @@ var (
 	ErrEmailCodeIsEmpty = errors.New("email confirmation code cannot be blank")
 	// ErrEmailCodeExpired ...
 	ErrEmailCodeExpired = errors.New("email confirmation code already used or expired")
+	// ErrEmailAlreadyConfirmed ...
+	ErrEmailAlreadyConfirmed = errors.New("email address already confirmed")
+	// ErrEmailConfirmationCode ...
+	ErrEmailConfirmationCode = errors.New("email confirmation code is invalid")
 )
 
 const (

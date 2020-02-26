@@ -235,11 +235,16 @@ func (ctl *accountController) EmailConfirm(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusUnprocessableEntity, models.ErrUserIsLocked.Error())
 	}
 
-	// Cannot change password on locked account
 	if user.IsActive {
 		xlog.Debugf(ctx, "user account already activated")
 
-		return c.JSON(http.StatusOK, echo.Map{"status": "ok"})
+		return echo.NewHTTPError(http.StatusUnprocessableEntity, models.ErrEmailAlreadyConfirmed.Error())
+	}
+
+	if user.ValidationHash != req.Code {
+		xlog.Debugf(ctx, "Incorrect code supplier")
+
+		return echo.NewHTTPError(http.StatusUnprocessableEntity, models.ErrEmailConfirmationCode.Error())
 	}
 
 	user.IsActive = true

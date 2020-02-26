@@ -139,58 +139,71 @@ func TestControllers_Account_EmailConfirm(t *testing.T) {
 
 	t.Run("Non-existing user", func(t *testing.T) {
 		user := models.ConfirmEmail{
-			ID:        uuid.New(),
-			FirstName: "John",
-			LastName:  "Snow",
-			Email:     "google@test.com",
-			Password:  "Test123456",
+			UserID: uuid.New(),
+			Code:   "CodeCodeCode",
+		}
+
+		_, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", user, echo.New())
+
+		err := ctl.EmailConfirm(ctx)
+		if assert.Error(t, err) {
+			assert.Contains(t, err.Error(), "user not found", "error message %s", "formatted")
+		}
+	})
+
+	t.Run("Existing user, blank code", func(t *testing.T) {
+		user := models.ConfirmEmail{
+			UserID: helpers.UUIDFromString(nil, "775a5b37-1742-4e54-9439-0357e768b011"),
+			Code:   "",
+		}
+
+		_, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", user, echo.New())
+
+		err := ctl.EmailConfirm(ctx)
+		if assert.Error(t, err) {
+			assert.Contains(t, err.Error(), "email confirmation code cannot be blank", "error message %s", "formatted")
+		}
+	})
+
+	t.Run("Existing user and already activated", func(t *testing.T) {
+		user := models.ConfirmEmail{
+			UserID: helpers.UUIDFromString(nil, "775a5b37-1742-4e54-9439-0357e768b011"),
+			Code:   "DfgDdfghDdfg",
+		}
+
+		_, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", user, echo.New())
+
+		err := ctl.EmailConfirm(ctx)
+		if assert.Error(t, err) {
+			assert.Contains(t, err.Error(), "email address already confirmed", "error message %s", "formatted")
+		}
+	})
+
+	t.Run("Existing user, wrong code", func(t *testing.T) {
+		user := models.ConfirmEmail{
+			UserID: helpers.UUIDFromString(nil, "3ab1ba2a-6031-4e34-aae3-dcd43a987775"),
+			Code:   "xxxSomeHash",
+		}
+
+		_, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", user, echo.New())
+
+		err := ctl.EmailConfirm(ctx)
+		if assert.Error(t, err) {
+			assert.Contains(t, err.Error(), "email confirmation code is invalid", "error message %s", "formatted")
+		}
+	})
+
+	t.Run("Should be all good", func(t *testing.T) {
+		user := models.ConfirmEmail{
+			UserID: helpers.UUIDFromString(nil, "3ab1ba2a-6031-4e34-aae3-dcd43a987775"),
+			Code:   "SomeHash123",
 		}
 
 		rec, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", user, echo.New())
 
 		err := ctl.EmailConfirm(ctx)
 		if assert.NoError(t, err) {
-			assert.Equal(t, http.StatusCreated, rec.Code)
-		}
-	})
-
-	t.Run("Existing user", func(t *testing.T) {
-		user := models.CreateUser{
-			ID:        uuid.New(),
-			Email:     "admin@test.com",
-			FirstName: "Admin",
-			LastName:  "Example",
-			Role:      "user",
-			Password:  "Test123456",
-			Status:    models.StatusActive,
-			Active:    true,
-		}
-
-		_, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", user, echo.New())
-
-		err := ctl.EmailConfirm(ctx)
-		if assert.Error(t, err) {
-			assert.Contains(t, err.Error(), "username taken", "error message %s", "formatted")
-		}
-	})
-
-	t.Run("Already validated user", func(t *testing.T) {
-		user := models.CreateUser{
-			ID:        uuid.New(),
-			Email:     "admin@test.com",
-			FirstName: "Admin",
-			LastName:  "Example",
-			Role:      "user",
-			Password:  "Test123456",
-			Status:    models.StatusActive,
-			Active:    true,
-		}
-
-		_, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", user, echo.New())
-
-		err := ctl.EmailConfirm(ctx)
-		if assert.Error(t, err) {
-			assert.Contains(t, err.Error(), "username taken", "error message %s", "formatted")
+			assert.Equal(t, http.StatusOK, rec.Code)
 		}
 	})
 }
