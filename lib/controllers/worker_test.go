@@ -93,6 +93,27 @@ func TestControllers_Worker_UserProfileUpdated(t *testing.T) {
 	})
 }
 
+func TestControllers_Worker_ConfirmEmail(t *testing.T) {
+	ctl := controllers.NewWorkerController(_userSrv, _queueSrv, _emailSrv)
+
+	t.Run("Existing user", func(t *testing.T) {
+		data := models.WorkerRequest{ID: helpers.UUIDFromString(t, "3ab1ba2a-6031-4e34-aae3-dcd43a987775")}
+		_, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", data, echo.New())
+
+		assert.NoError(t, ctl.ConfirmEmail(ctx))
+	})
+
+	t.Run("Non-existing user", func(t *testing.T) {
+		data := models.WorkerRequest{ID: helpers.UUIDFromString(t, "5fcc94e5-c6aa-4320-8469-f5021af54b88")}
+		_, ctx := helpers.RequestObjectWithBody(t, http.MethodPost, "/", data, echo.New())
+
+		err := ctl.ConfirmEmail(ctx)
+		if assert.Error(t, err) {
+			assert.Contains(t, err.Error(), "user not found", "error message %s", "formatted")
+		}
+	})
+}
+
 func TestControllers_Worker_UserPasswordChanged(t *testing.T) {
 	ctl := controllers.NewWorkerController(_userSrv, _queueSrv, _emailSrv)
 
