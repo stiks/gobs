@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/go-ozzo/ozzo-validation/v4/is"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -63,7 +64,8 @@ type User struct {
 	Email             string    `json:"email"      sql:",unique,index"`
 	Verified          bool      `json:"verified"`
 	PasswordHash      []byte    `json:"-"          sql:",index"`
-	PasswordResetHash string    `json:"-"          sql:"type:varchar(255),index"`
+	PasswordResetHash string    `json:"-"          sql:"type:varchar(128),index"`
+	ValidationHash    string    `json:"-"          sql:"type:varchar(128),index"`
 	Role              string    `json:"role"       sql:"type:varchar(128)"`
 	Status            int       `json:"status"`
 	IsDeleted         bool      `json:"-"`
@@ -255,5 +257,19 @@ func (u *EmailConfirmationCode) Validate() error {
 	return validation.ValidateStruct(u,
 		validation.Field(&u.Code, validation.Required),
 		validation.Field(&u.Password, validation.Required, validation.Length(8, 64)),
+	)
+}
+
+// ConfirmEmail ...
+type ConfirmEmail struct {
+	UserID uuid.UUID `json:"id"     form:"id"     query:"id"`
+	Code   string    `json:"code" form:"code" query:"code"`
+}
+
+// Validate ...
+func (u *ConfirmEmail) Validate() error {
+	return validation.ValidateStruct(u,
+		validation.Field(&u.UserID, validation.Required, is.UUID),
+		validation.Field(&u.Code, validation.Required, validation.Length(8, 64)),
 	)
 }

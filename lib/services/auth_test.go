@@ -3,7 +3,9 @@ package services_test
 import (
 	"os"
 	"testing"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/stiks/gobs/lib/models"
@@ -255,9 +257,75 @@ func TestService_Auth_RefreshTokenGrant(t *testing.T) {
 	t.Run("Expired refresh token", func(t *testing.T) {
 		auth := models.AuthRequest{
 			GrantType:    "refresh_token",
+			ClientID:     "RandomStuffHere",
+			ClientSecret: "RandomKeySecret",
+			RefreshToken: "ExpiredRefreshToken",
+		}
+
+		client := models.AuthClient{
+			ID:           helpers.UUIDFromString(nil, "ceae6905-866d-42ad-90c5-5f06cd4b242f"),
+			ClientID:     "RandomStuffHere",
+			ClientSecret: "RandomKeySecret",
+		}
+
+		_, err := srv.RefreshTokenGrant(nil, &auth, &client)
+		if assert.Error(t, err) {
+			assert.EqualError(t, err, "refresh token expired", "error message %s", "formatted")
+		}
+	})
+}
+
+func TestService_Auth_GetValidRefreshToken(t *testing.T) {
+	srv := _authSrv()
+
+	t.Run("All good", func(t *testing.T) {
+		client := models.AuthClient{
+			ID:           helpers.UUIDFromString(nil, "775a5b37-1742-4e54-9439-0357e768b011"),
 			ClientID:     "SecRetAuthKey",
 			ClientSecret: "SecretSuper",
-			RefreshToken: "ExpiredRefreshToken",
+		}
+
+		token, err := srv.GetValidRefreshToken(nil, "sdfsdf5K9QwC6mptVSJVvAuFvA4w245HsiXxfMpOtpzASJ4Rr6E", &client)
+		if assert.NoError(t, err) {
+			assert.Equal(t, "775a5b37-1742-4e54-9439-0357e768b011", token.UserID.String())
+		}
+	})
+
+	t.Run("Token not found", func(t *testing.T) {
+		client := models.AuthClient{
+			ID:           helpers.UUIDFromString(nil, "775a5b37-1742-4e54-9439-0357e768b011"),
+			ClientID:     "SecRetAuthKey",
+			ClientSecret: "SecretSuper",
+		}
+
+		_, err := srv.GetValidRefreshToken(nil, "wrong", &client)
+		if assert.Error(t, err) {
+			assert.EqualError(t, err, "refresh token not found", "error message %s", "formatted")
+		}
+	})
+
+	t.Run("Expired refresh token", func(t *testing.T) {
+		client := models.AuthClient{
+			ID:           helpers.UUIDFromString(nil, "ceae6905-866d-42ad-90c5-5f06cd4b242f"),
+			ClientID:     "RandomStuffHere",
+			ClientSecret: "RandomKeySecret",
+		}
+
+		_, err := srv.GetValidRefreshToken(nil, "ExpiredRefreshToken", &client)
+		if assert.Error(t, err) {
+			assert.EqualError(t, err, "refresh token expired", "error message %s", "formatted")
+		}
+	})
+}
+
+func TestService_Auth_GenerateNewRefreshToken(t *testing.T) {
+	srv := _authSrv()
+
+	t.Run("All good", func(t *testing.T) {
+		id := uuid.New()
+
+		user := models.User{
+			ID: id,
 		}
 
 		client := models.AuthClient{
@@ -266,9 +334,79 @@ func TestService_Auth_RefreshTokenGrant(t *testing.T) {
 			ClientSecret: "SecretSuper",
 		}
 
-		_, err := srv.RefreshTokenGrant(nil, &auth, &client)
-		if assert.Error(t, err) {
-			assert.EqualError(t, err, "refresh token expired", "error message %s", "formatted")
+		token, err := srv.GenerateNewRefreshToken(nil, &client, &user)
+		if assert.NoError(t, err) {
+			assert.Equal(t, id.String(), token.UserID.String())
+		}
+	})
+}
+
+func TestService_Auth_GetOrCreateRefreshToken(t *testing.T) {
+	srv := _authSrv()
+
+	t.Run("Token not found", func(t *testing.T) {
+		id := uuid.New()
+
+		user := models.User{
+			ID: id,
+		}
+
+		client := models.AuthClient{
+			ID:           helpers.UUIDFromString(nil, "775a5b37-1742-4e54-9439-0357e768b011"),
+			ClientID:     "SecRetAuthKey",
+			ClientSecret: "SecretSuper",
+		}
+
+		token, err := srv.GetOrCreateRefreshToken(nil, &client, &user)
+		if assert.NoError(t, err) {
+			assert.Equal(t, id.String(), token.UserID.String())
+		}
+	})
+
+	t.Run("All good", func(t *testing.T) {
+		user := models.User{
+			ID: helpers.UUIDFromString(nil, "775a5b37-1742-4e54-9439-0357e768b011"),
+		}
+
+		client := models.AuthClient{
+			ID:           helpers.UUIDFromString(nil, "775a5b37-1742-4e54-9439-0357e768b011"),
+			ClientID:     "SecRetAuthKey",
+			ClientSecret: "SecretSuper",
+		}
+
+		token, err := srv.GetOrCreateRefreshToken(nil, &client, &user)
+		if assert.NoError(t, err) {
+			assert.Equal(t, "775a5b37-1742-4e54-9439-0357e768b011", token.UserID.String())
+			assert.Equal(t, "775a5b37-1742-4e54-9439-0357e768b011", token.ClientID.String())
+			assert.Equal(t, "sdfsdf5K9QwC6mptVSJVvAuFvA4w245HsiXxfMpOtpzASJ4Rr6E", token.Token)
+		}
+	})
+
+	t.Run("Existing refresh token", func(t *testing.T) {
+		user := models.User{
+			ID:                helpers.UUIDFromString(nil, "775a5b37-1742-4e54-9439-0357e768b011"),
+			Email:             "peter@test.com",
+			PasswordHash:      []byte("$2a$10$kPrRofMm9VnE5w9ih6FwtuiuY/fIJ7/pcwvAmvL/3x3t2I144hyyq"),
+			PasswordResetHash: "random",
+			FirstName:         "Apple",
+			LastName:          "Appleton",
+			IsActive:          true,
+			Verified:          true,
+			Role:              models.RoleSuperUser,
+			Status:            models.StatusActive,
+			CreatedAt:         time.Now(),
+			UpdatedAt:         time.Now(),
+		}
+
+		client := models.AuthClient{
+			ID:           helpers.UUIDFromString(nil, "ceae6905-866d-42ad-90c5-5f06cd4b242f"),
+			ClientID:     "RandomStuffHere",
+			ClientSecret: "RandomKeySecret",
+		}
+
+		token, err := srv.GetOrCreateRefreshToken(nil, &client, &user)
+		if assert.NoError(t, err) {
+			assert.NotEqual(t, "sdfsdf5K9QwC6mptVSJVvAuFvA4w245HsiXxfMpOtpzASJ4Rr6E", token.Token)
 		}
 	})
 }

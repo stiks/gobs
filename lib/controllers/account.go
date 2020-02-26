@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/gommon/random"
 
 	"github.com/stiks/gobs/lib/models"
 	"github.com/stiks/gobs/lib/services"
@@ -16,6 +17,7 @@ import (
 type AccountControllerInterface interface {
 	PasswordConfirm(c echo.Context) error
 	ResetRequest(c echo.Context) error
+	EmailConfirm(c echo.Context) error
 	GetProfile(c echo.Context) error
 	Register(c echo.Context) error
 	Routes(g *echo.Group)
@@ -37,6 +39,7 @@ func (ctl *accountController) Routes(g *echo.Group) {
 	g.POST("/account/reset-confirm", ctl.PasswordConfirm)
 	g.POST("/account/reset", ctl.ResetRequest)
 	g.POST("/account/register", ctl.Register)
+	g.POST("/account/email-confirm", ctl.EmailConfirm)
 	g.GET("/account/profile", ctl.GetProfile, auth.EnableAuthorisation(), auth.RequiredAuth())
 }
 
@@ -125,7 +128,10 @@ func (ctl *accountController) Register(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusConflict, models.ErrUsernameTaken.Error())
 	}
 
-	if _, err := ctl.user.Create(ctx, req.Password, req.ToUser(nil)); err != nil {
+	user := req.ToUser(nil)
+	user.ValidationHash = random.String(32, random.Alphanumeric)
+
+	if _, err := ctl.user.Create(ctx, req.Password, user); err != nil {
 		xlog.Errorf(ctx, "Unable to create user, err: %s", err.Error())
 
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -183,6 +189,63 @@ func (ctl *accountController) PasswordConfirm(c echo.Context) error {
 	user, err = ctl.user.UpdatePassword(ctx, user.ID, req.Password)
 	if err != nil {
 		xlog.Debugf(ctx, "Unable update password, err: %s", err.Error())
+
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{"status": "ok"})
+}
+
+// EmailConfirm ...
+func (ctl *accountController) EmailConfirm(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	xlog.Debugf(ctx, "User going to password confirmation page")
+
+	req := new(models.ConfirmEmail)
+	if err := c.Bind(req); err != nil {
+		xlog.Errorf(ctx, "Unable to bind, err: %s", err.Error())
+
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	if len(req.Code) <= 0 {
+		xlog.Errorf(ctx, "Email confirmation code is blank")
+
+		return echo.NewHTTPError(http.StatusBadRequest, models.ErrEmailCodeIsEmpty.Error())
+	}
+
+	if err := req.Validate(); err != nil {
+		xlog.Errorf(ctx, "Unable to validate query, err: %s", err.Error())
+
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	user, err := ctl.user.GetByID(ctx, req.UserID)
+	if err != nil {
+		xlog.Debugf(ctx, "Unable to fid user, error: %s", err.Error())
+
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	// Cannot change password on locked account
+	if user.Locked {
+		xlog.Debugf(ctx, "user account is locked")
+
+		return echo.NewHTTPError(http.StatusUnprocessableEntity, models.ErrUserIsLocked.Error())
+	}
+
+	// Cannot change password on locked account
+	if user.IsActive {
+		xlog.Debugf(ctx, "user account already activated")
+
+		return c.JSON(http.StatusOK, echo.Map{"status": "ok"})
+	}
+
+	user.IsActive = true
+
+	if _, err := ctl.user.Update(ctx, user); err != nil {
+		xlog.Debugf(ctx, "Getting user by hash error: %s", err.Error())
 
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}

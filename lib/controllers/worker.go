@@ -22,6 +22,7 @@ type workerController struct {
 // WorkerControllerInterface ...
 type WorkerControllerInterface interface {
 	Routes(g *echo.Group)
+	ConfirmEmail(c echo.Context) error
 	UserPasswordReset(c echo.Context) error
 	UserProfileUpdated(c echo.Context) error
 	UserPasswordChanged(c echo.Context) error
@@ -38,6 +39,7 @@ func NewWorkerController(userSrv services.UserService, queueSrv services.QueueSe
 
 // Routes registers routes
 func (ctl *workerController) Routes(g *echo.Group) {
+	g.POST("/user-confirm-email", ctl.ConfirmEmail)
 	g.POST("/user-password-reset", ctl.UserPasswordReset)
 	g.POST("/user-profile-updated", ctl.UserProfileUpdated)
 	g.POST("/user-password-changed", ctl.UserPasswordChanged)
@@ -120,6 +122,57 @@ func (ctl *workerController) UserProfileUpdated(c echo.Context) error {
 	}
 
 	if err := ctl.email.SendEmail(ctx, user.Email, "Profile updated", msg); err != nil {
+		xlog.Errorf(ctx, "Unable to send email, err: %s", err.Error())
+
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.NoContent(http.StatusNoContent)
+}
+
+// ConfirmEmail ...
+func (ctl *workerController) ConfirmEmail(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	req := new(models.WorkerRequest)
+	if err := c.Bind(req); err != nil {
+		xlog.Errorf(ctx, "Bind error: %s", err.Error())
+
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	user, err := ctl.user.GetByID(ctx, req.ID)
+	if err != nil {
+		xlog.Errorf(ctx, "Unable to find user, err: %s", err.Error())
+
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	msg := hermes.Email{
+		Body: hermes.Body{
+			Name: fmt.Sprintf("%s", user.FirstName),
+			Intros: []string{
+				"Welcome to Hermes! We're very excited to have you on board.",
+			},
+			Actions: []hermes.Action{
+				{
+					Instructions: "Please confirm your account by clicking the button below:",
+					Button: hermes.Button{
+						Color: "#DC4D2F",
+						Text:  "Confirm email",
+						Link:  fmt.Sprintf("%s/client/register?code=%s", env.MustGetString("PUBLIC_HOSTNAME"), req.Code),
+					},
+				},
+			},
+			Outros: []string{
+				fmt.Sprintf("Or you can click here: %s/account/validate?code=%s", env.MustGetString("PUBLIC_HOSTNAME"), req.Code),
+				"If you didn't request this, please ignore this email.",
+			},
+			Signature: "Thanks",
+		},
+	}
+
+	if err := ctl.email.SendEmail(ctx, user.Email, "Confirmation instructions", msg); err != nil {
 		xlog.Errorf(ctx, "Unable to send email, err: %s", err.Error())
 
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())

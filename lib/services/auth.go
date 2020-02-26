@@ -5,11 +5,11 @@ import (
 	"time"
 
 	"github.com/labstack/gommon/log"
-	"github.com/stiks/gobs/pkg/xlog"
 
 	"github.com/stiks/gobs/lib/models"
 	"github.com/stiks/gobs/lib/repositories"
 	"github.com/stiks/gobs/pkg/env"
+	"github.com/stiks/gobs/pkg/xlog"
 )
 
 type authService struct {
@@ -21,6 +21,9 @@ type authService struct {
 
 // AuthService ...
 type AuthService interface {
+	GetValidRefreshToken(ctx context.Context, token string, client *models.AuthClient) (*models.Token, error)
+	GenerateNewRefreshToken(ctx context.Context, client *models.AuthClient, user *models.User) (*models.Token, error)
+	GetOrCreateRefreshToken(ctx context.Context, client *models.AuthClient, user *models.User) (*models.Token, error)
 	RefreshTokenGrant(ctx context.Context, r *models.AuthRequest, client *models.AuthClient) (*models.TokenResponse, error)
 	PasswordGrant(ctx context.Context, r *models.AuthRequest, client *models.AuthClient) (*models.TokenResponse, error)
 	GetClient(ctx context.Context, r *models.AuthRequest) (*models.AuthClient, error)
@@ -114,7 +117,7 @@ func (s *authService) PasswordGrant(ctx context.Context, req *models.AuthRequest
 	}
 
 	// create or retrieve a refresh token
-	refreshToken, err := s.getOrCreateRefreshToken(ctx, client, user)
+	refreshToken, err := s.GetOrCreateRefreshToken(ctx, client, user)
 	if err != nil {
 		xlog.Errorf(ctx, "Unable to create or get refresh token, err: %s", err.Error())
 
@@ -129,35 +132,34 @@ func (s *authService) PasswordGrant(ctx context.Context, req *models.AuthRequest
 	return models.NewTokenResponse(accessToken, refreshToken, s.AccessTokenLifetime, "Bearer")
 }
 
-// getOrCreateRefreshToken retrieves an existing refresh token, if expired,
+// GetOrCreateRefreshToken retrieves an existing refresh token, if expired,
 // the token gets deleted and new refresh token is created
-func (s *authService) getOrCreateRefreshToken(ctx context.Context, client *models.AuthClient, user *models.User) (*models.Token, error) {
+func (s *authService) GetOrCreateRefreshToken(ctx context.Context, client *models.AuthClient, user *models.User) (*models.Token, error) {
 	// Try to fetch an existing refresh token first
 	refreshToken, err := s.repo.FindByClientUser(ctx, client.ID, user.ID)
 	if err != nil {
 		xlog.Errorf(ctx, "Unable to find token, err: %s", err.Error())
 
-		// We assume token already expired
-		return s.generateNewRefreshToken(ctx, client, user)
+		return s.GenerateNewRefreshToken(ctx, client, user)
 	}
 
 	// If the refresh token has expired, delete it
 	if time.Now().UTC().After(time.Unix(int64(refreshToken.ExpiresAt), 0)) {
-		xlog.Errorf(ctx, "Token %d expired, deleting", refreshToken.ID)
+		xlog.Errorf(ctx, "Token %d expired, deleting", refreshToken.ID.String())
 
 		if err := s.repo.DeleteToken(ctx, refreshToken.ID); err != nil {
-			xlog.Errorf(ctx, "Unable delete token %d, err: %s", refreshToken.ID, err.Error())
+			xlog.Errorf(ctx, "Unable delete token %d, err: %s", refreshToken.ID.String(), err.Error())
 		}
 
-		return s.generateNewRefreshToken(ctx, client, user)
+		return s.GenerateNewRefreshToken(ctx, client, user)
 	}
 
 	// All other cases, we just return token
 	return refreshToken, nil
 }
 
-// generateNewToken generates new token
-func (s *authService) generateNewRefreshToken(ctx context.Context, client *models.AuthClient, user *models.User) (*models.Token, error) {
+// GenerateNewRefreshToken generates new token
+func (s *authService) GenerateNewRefreshToken(ctx context.Context, client *models.AuthClient, user *models.User) (*models.Token, error) {
 	// We assume token already expired
 	refreshToken, err := s.repo.CreateToken(ctx, models.NewRefreshToken(client, user, s.RefreshTokenLifetime))
 	if err != nil {
@@ -172,13 +174,14 @@ func (s *authService) generateNewRefreshToken(ctx context.Context, client *model
 	return refreshToken, nil
 }
 
+// RefreshTokenGrant ...
 func (s *authService) RefreshTokenGrant(ctx context.Context, r *models.AuthRequest, client *models.AuthClient) (*models.TokenResponse, error) {
 	if len(r.RefreshToken) <= 0 {
 		return nil, models.ErrRefreshTokenEmpty
 	}
 
 	// Fetch the refresh token
-	refreshToken, err := s.getValidRefreshToken(ctx, r.RefreshToken, client)
+	refreshToken, err := s.GetValidRefreshToken(ctx, r.RefreshToken, client)
 	if err != nil {
 		return nil, err
 	}
@@ -203,8 +206,8 @@ func (s *authService) RefreshTokenGrant(ctx context.Context, r *models.AuthReque
 	return models.NewTokenResponse(accessToken, refreshToken, s.AccessTokenLifetime, "Bearer")
 }
 
-// getValidRefreshToken returns a valid non expired refresh token
-func (s *authService) getValidRefreshToken(ctx context.Context, token string, client *models.AuthClient) (*models.Token, error) {
+// GetValidRefreshToken returns a valid non expired refresh token
+func (s *authService) GetValidRefreshToken(ctx context.Context, token string, client *models.AuthClient) (*models.Token, error) {
 	// Fetch the refresh token from the database
 	refreshToken, err := s.repo.FindByHashClient(ctx, client.ID, token)
 	if err != nil {

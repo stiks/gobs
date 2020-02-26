@@ -36,7 +36,7 @@ func NewAuthRepository() repositories.AuthRepository {
 			},
 			{
 				ID:        uuid.New(),
-				ClientID:  helpers.UUIDFromString(nil, "775a5b37-1742-4e54-9439-0357e768b011"),
+				ClientID:  helpers.UUIDFromString(nil, "ceae6905-866d-42ad-90c5-5f06cd4b242f"),
 				UserID:    helpers.UUIDFromString(nil, "775a5b37-1742-4e54-9439-0357e768b011"),
 				Token:     "ExpiredRefreshToken",
 				ExpiresAt: time.Now().AddDate(-1, 0, 1).Unix(),
@@ -49,7 +49,7 @@ func NewAuthRepository() repositories.AuthRepository {
 				ClientSecret: "SecretSuper",
 			},
 			{
-				ID:           uuid.New(),
+				ID:           helpers.UUIDFromString(nil, "ceae6905-866d-42ad-90c5-5f06cd4b242f"),
 				ClientID:     "RandomStuffHere",
 				ClientSecret: "RandomKeySecret",
 			},

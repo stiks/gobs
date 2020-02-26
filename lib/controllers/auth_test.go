@@ -239,8 +239,8 @@ func TestControllers_Auth_TokenHandler_RefreshToken(t *testing.T) {
 	t.Run("Expired refresh token", func(t *testing.T) {
 		body := models.AuthRequest{
 			GrantType:    "refresh_token",
-			ClientID:     "SecRetAuthKey",
-			ClientSecret: "SecretSuper",
+			ClientID:     "RandomStuffHere",
+			ClientSecret: "RandomKeySecret",
 			RefreshToken: "ExpiredRefreshToken",
 		}
 

@@ -20,6 +20,7 @@ This is not yet another Go REST framework. The goal for this project is to come 
 ### Features
 * High performance, minimalist web framework ([Echo v4](https://github.com/labstack/echo))
 * Transactional emails ([Hermes v2](https://github.com/matcornic/hermes))
+* Input validation using ([Ozzo Validation v4](https://github.com/go-ozzo/ozzo-validation))
 * JWT token authorisation
 * Go modules
 

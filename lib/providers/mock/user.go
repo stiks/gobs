@@ -51,6 +51,8 @@ var (
 			Role:              models.RoleUser,
 			PasswordResetHash: "ZXqEMubf5DinaTHuOyJIm1z3Dq",
 			PasswordResetAt:   time.Now(),
+			IsActive:          false,
+			ValidationHash:    "SomeHash",
 			CreatedAt:         time.Now(),
 			UpdatedAt:         time.Now(),
 		},
