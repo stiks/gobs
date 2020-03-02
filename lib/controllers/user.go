@@ -69,12 +69,10 @@ func (ctl *userController) List(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{
-		"list": users,
-		"pagination": echo.Map{
-			"current":  params.Page,
-			"pageSize": params.PerPage,
-			"total":    total,
-		},
+		"data":     users,
+		"total":    total,
+		"pageSize": params.PerPage,
+		"current":  params.Page,
 	})
 }
 

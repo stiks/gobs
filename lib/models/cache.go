@@ -2,5 +2,9 @@ package models
 
 import "errors"
 
-// ErrMissCache ...
-var ErrMissCache = errors.New("cache not found")
+var (
+	// ErrMissCache ...
+	ErrMissCache = errors.New("cache not found")
+	// ErrCache ...
+	ErrCache = errors.New("cache error")
+)

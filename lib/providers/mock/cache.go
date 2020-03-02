@@ -7,8 +7,7 @@ import (
 	"github.com/stiks/gobs/lib/repositories"
 )
 
-type cacheRepository struct {
-}
+type cacheRepository struct{}
 
 // NewCacheRepository ...
 func NewCacheRepository() repositories.CacheRepository {
