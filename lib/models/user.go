@@ -14,6 +14,8 @@ import (
 var (
 	// ErrUserNotFound ...
 	ErrUserNotFound = errors.New("user not found")
+	// ErrUnableDeleteOwnAccount ...
+	ErrUnableDeleteOwnAccount = errors.New("unable to delete own account")
 	// ErrInvalidUsernameOrPassword ...
 	ErrInvalidUsernameOrPassword = errors.New("invalid username or password")
 	// ErrCannotSetEmptyUsername ...
@@ -53,8 +55,8 @@ const (
 
 // UserQueryParams ...
 type UserQueryParams struct {
-	Page    int    `query:"page"`
-	PerPage int    `query:"perPage"`
+	Page    int    `query:"current"`
+	PerPage int    `query:"pageSize"`
 	Role    string `query:"role"`
 	Status  *int   `query:"status"`
 	Query   string `query:"query"`

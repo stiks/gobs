@@ -236,11 +236,29 @@ func TestControllers_User_Delete(t *testing.T) {
 		}
 	})
 
+	t.Run("Cannot delete self", func(t *testing.T) {
+		e := echo.New()
+		e.SetMaxParam(2)
+
+		_, ctx := helpers.RequestWithBody(http.MethodDelete, "/", nil, e)
+		ctx.Set("USER_ID", "775a5b37-1742-4e54-9439-0357e768b011")
+
+		ctx.SetPath("/users/:id")
+		ctx.SetParamNames("id")
+		ctx.SetParamValues("775a5b37-1742-4e54-9439-0357e768b011")
+
+		err := ctl.Delete(ctx)
+		if assert.Error(t, err) {
+			assert.Contains(t, err.Error(), "unable to delete own account", "error message %s", "formatted")
+		}
+	})
+
 	t.Run("Existing user", func(t *testing.T) {
 		e := echo.New()
 		e.SetMaxParam(2)
 
 		_, ctx := helpers.RequestWithBody(http.MethodDelete, "/", nil, e)
+		ctx.Set("USER_ID", "3ab1ba2a-6031-4e34-aae3-dcd43a987775")
 
 		ctx.SetPath("/users/:id")
 		ctx.SetParamNames("id")
@@ -254,6 +272,7 @@ func TestControllers_User_Delete(t *testing.T) {
 		e.SetMaxParam(2)
 
 		_, ctx := helpers.RequestWithBody(http.MethodDelete, "/", nil, e)
+		ctx.Set("USER_ID", "775a5b37-1742-4e54-9439-0357e768b011")
 
 		ctx.SetPath("/users/:id")
 		ctx.SetParamNames("id")

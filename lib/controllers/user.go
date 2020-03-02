@@ -53,6 +53,11 @@ func (ctl *userController) List(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
+	// Set hard limit for page size
+	if params.PerPage <= 0 {
+		params.PerPage = 3
+	}
+
 	users, err := ctl.user.GetAll(ctx, params)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -169,6 +174,10 @@ func (ctl *userController) Delete(c echo.Context) error {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	if c.Param("id") == c.Get("USER_ID") {
+		return echo.NewHTTPError(http.StatusBadRequest, models.ErrUnableDeleteOwnAccount.Error())
 	}
 
 	err = ctl.user.Delete(ctx, id)
