@@ -13,6 +13,7 @@ import (
 	"github.com/stiks/gobs/lib/providers/dummy"
 	"github.com/stiks/gobs/lib/providers/mock"
 	"github.com/stiks/gobs/lib/services"
+	"github.com/stiks/gobs/pkg/helpers"
 )
 
 func main() {
@@ -24,6 +25,7 @@ func main() {
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+	e.Use(helpers.DefaultHeadersMiddleware())
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -42,10 +44,11 @@ func main() {
 		emailSrv = services.NewEmailService(mock.NewEmailRepository())
 		authSrv  = services.NewAuthService(mock.NewAuthRepository())
 		userSrv  = services.NewUserService(mock.NewUserRepository(), queueSrv, cacheSrv)
+		statsSrv = services.NewStatsService(mock.NewStatsRepository())
 	)
 
 	// Core endpoints
-	controllers.NewHealthController().Routes(e.Group("api"))
+	controllers.NewHealthController(statsSrv).Routes(e.Group("api"))
 	controllers.NewWorkerController(userSrv, queueSrv, emailSrv).Routes(e.Group("api"))
 
 	// Base controllers

@@ -63,7 +63,7 @@ func (ctl *authController) TokenHandler(c echo.Context) error {
 	if err != nil {
 		xlog.Infof(ctx, "Info: Trying to login with ClientID: %s, err: %s", req.ClientID, err.Error())
 
-		return echo.NewHTTPError(http.StatusNotFound, err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	xlog.Debugf(ctx, "User is trying to login with ClientID: %s and ClientSecret: %s", client.ClientID, client.ClientSecret)
