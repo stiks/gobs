@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/dgrijalva/jwt-go"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
@@ -23,20 +24,45 @@ func RequiredAuth() echo.MiddlewareFunc {
 	}
 }
 
+// SuperOnly ...
+func SuperOnly() echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			if c.Get("ROLE") != "super" {
+				return echo.NewHTTPError(http.StatusForbidden, "access deny")
+			}
+
+			return next(c)
+		}
+	}
+}
+
+// SuperOrAdminOnly ...
+func SuperOrAdminOnly() echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			if c.Get("ROLE") != "super" && c.Get("ROLE") != "admin" {
+				return echo.NewHTTPError(http.StatusForbidden, "access deny")
+			}
+
+			return next(c)
+		}
+	}
+}
+
 // EnableAuthorisation ...
 func EnableAuthorisation() echo.MiddlewareFunc {
 	return middleware.JWTWithConfig(middleware.JWTConfig{
-		// CredentialsOptional: true,
 		SigningKey:    []byte(env.MustGetString("AUTH_SECRET_KEY")),
-		ContextKey:    "user",
+		ContextKey:    "users",
 		SigningMethod: middleware.AlgorithmHS256,
 		BeforeFunc: func(c echo.Context) {
 			c.Set("AUTHORISED", false)
 		},
 		SuccessHandler: func(c echo.Context) {
 			/* we only authorise users when we have users details in Context */
-			if c.Get("user") != nil && c.Get("user") != "" {
-				claims := c.Get("user").(*jwt.Token).Claims.(jwt.MapClaims)
+			if c.Get("users") != nil && c.Get("users") != "" {
+				claims := c.Get("users").(*jwt.Token).Claims.(jwt.MapClaims)
 				if claims == nil {
 					return
 				}

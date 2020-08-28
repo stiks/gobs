@@ -42,10 +42,10 @@ var (
 		},
 		{
 			ID:                helpers.UUIDFromString(nil, "3ab1ba2a-6031-4e34-aae3-dcd43a987775"),
-			Email:             "admin@test.com",
-			FirstName:         "Admin",
+			Email:             "user@test.com",
+			FirstName:         "User",
 			LastName:          "Example",
-			PasswordHash:      []byte("$2a$10$Dda31WQP2L.pnM4M8F3xZ.yM6vX31mCmb10t76v4ja9WrQ0XRvgDy"),
+			PasswordHash:      []byte("$2a$10$kPrRofMm9VnE5w9ih6FwtuiuY/fIJ7/pcwvAmvL/3x3t2I144hyyq"),
 			OwnerID:           helpers.UUIDFromString(nil, "775a5b37-1742-4e54-9439-0357e768b011"),
 			Status:            models.StatusInit,
 			Role:              models.RoleUser,
@@ -159,14 +159,21 @@ func (r *userRepository) Delete(ctx context.Context, id uuid.UUID) error {
 		return err
 	}
 
+	found := false
 	var db []models.User
 	for _, k := range r.db {
 		if k.ID != id {
 			db = append(db, k)
 		}
+
+		found = true
 	}
 
 	r.db = db
 
-	return nil
+	if found {
+		return nil
+	}
+
+	return models.ErrUserNotFound
 }

@@ -37,11 +37,11 @@ func NewUserController(service services.UserService) UserControllerInterface {
 func (ctl *userController) Routes(g *echo.Group) {
 	g.Use(auth.EnableAuthorisation())
 
-	g.GET("/users", ctl.List, auth.RequiredAuth())
-	g.GET("/users/:id", ctl.View, auth.RequiredAuth())
-	g.POST("/users", ctl.Create, auth.RequiredAuth())
-	g.PUT("/users/:id", ctl.Update, auth.RequiredAuth())
-	g.DELETE("/users/:id", ctl.Delete, auth.RequiredAuth())
+	g.GET("/users", ctl.List, auth.RequiredAuth(), auth.SuperOrAdminOnly())
+	g.GET("/users/:id", ctl.View, auth.RequiredAuth(), auth.SuperOrAdminOnly())
+	g.POST("/users", ctl.Create, auth.RequiredAuth(), auth.SuperOrAdminOnly())
+	g.PUT("/users/:id", ctl.Update, auth.RequiredAuth(), auth.SuperOrAdminOnly())
+	g.DELETE("/users/:id", ctl.Delete, auth.RequiredAuth(), auth.SuperOrAdminOnly())
 }
 
 // List ...

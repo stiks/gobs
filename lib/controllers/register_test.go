@@ -50,8 +50,8 @@ func TestControllers_Register_Register(t *testing.T) {
 	t.Run("Existing user", func(t *testing.T) {
 		user := models.CreateUser{
 			ID:        uuid.New(),
-			Email:     "admin@test.com",
-			FirstName: "Admin",
+			Email:     "user@test.com",
+			FirstName: "User",
 			LastName:  "Example",
 			Role:      "user",
 			Password:  "Test123456",
